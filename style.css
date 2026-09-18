@@ -493,6 +493,11 @@ h4 {
 }
 
 @media (max-width: 650px) {
+    .archive-section,
+  .system-info-section {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
   .nav-container {
     align-items: flex-start;
     flex-direction: column;
