@@ -534,3 +534,411 @@ h4 {
     flex-direction: column;
   }
 }
+/* =========================================
+   ADVANCED PHYSICS HERO VISUAL
+   ========================================= */
+
+.hero {
+  position: relative;
+  overflow: hidden;
+}
+
+.physics-visual {
+  position: relative;
+  width: 420px;
+  height: 420px;
+  margin: 0 auto;
+  display: grid;
+  place-items: center;
+  isolation: isolate;
+}
+
+/* Main atom */
+
+.atom {
+  position: relative;
+  width: 260px;
+  height: 260px;
+  transform-style: preserve-3d;
+  animation: atomHover 8s ease-in-out infinite;
+}
+
+.atom-nucleus {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 58px;
+  height: 58px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 30% 25%, #ffffff, #65d9ff 25%, #168cff 65%, #5135d9);
+  box-shadow:
+    0 0 15px #55d7ff,
+    0 0 45px rgba(0, 153, 255, 0.8),
+    0 0 90px rgba(91, 52, 255, 0.5);
+  animation: nucleusPulse 3s ease-in-out infinite;
+  z-index: 5;
+}
+
+.atom-nucleus span {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #b8f3ff;
+  box-shadow: 0 0 12px #ffffff;
+}
+
+.atom-nucleus span:nth-child(1) {
+  top: 8px;
+  left: 10px;
+}
+
+.atom-nucleus span:nth-child(2) {
+  right: 8px;
+  top: 18px;
+}
+
+.atom-nucleus span:nth-child(3) {
+  bottom: 8px;
+  left: 20px;
+}
+
+/* Electron paths */
+
+.atom-orbit {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 38%;
+  border: 1px solid rgba(69, 202, 255, 0.9);
+  border-radius: 50%;
+  box-shadow:
+    0 0 12px rgba(0, 157, 255, 0.45),
+    inset 0 0 12px rgba(0, 157, 255, 0.2);
+}
+
+.orbit-horizontal {
+  transform: translate(-50%, -50%) rotate(0deg);
+  animation: orbitHorizontal 8s linear infinite;
+}
+
+.orbit-diagonal {
+  transform: translate(-50%, -50%) rotate(60deg);
+  animation: orbitDiagonal 10s linear infinite reverse;
+}
+
+.orbit-vertical {
+  transform: translate(-50%, -50%) rotate(-60deg);
+  animation: orbitVertical 12s linear infinite;
+}
+
+/* Electrons */
+
+.electron {
+  position: absolute;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow:
+    0 0 8px #ffffff,
+    0 0 20px #38bfff,
+    0 0 35px #168cff;
+  z-index: 6;
+}
+
+.electron-one {
+  top: 24px;
+  left: 125px;
+  animation: electronOne 8s linear infinite;
+}
+
+.electron-two {
+  top: 125px;
+  right: 12px;
+  animation: electronTwo 10s linear infinite;
+}
+
+.electron-three {
+  bottom: 18px;
+  left: 125px;
+  animation: electronThree 12s linear infinite;
+}
+
+/* Background glowing orbs */
+
+.glow-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(35px);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.orb-one {
+  width: 190px;
+  height: 190px;
+  top: 0;
+  right: 0;
+  background: rgba(0, 153, 255, 0.24);
+  animation: orbFloat 9s ease-in-out infinite alternate;
+}
+
+.orb-two {
+  width: 160px;
+  height: 160px;
+  bottom: 0;
+  left: 0;
+  background: rgba(111, 54, 255, 0.22);
+  animation: orbFloat 12s ease-in-out infinite alternate-reverse;
+}
+
+.orb-three {
+  width: 100px;
+  height: 100px;
+  top: 45%;
+  left: 40%;
+  background: rgba(0, 224, 255, 0.14);
+  animation: orbPulse 5s ease-in-out infinite;
+}
+
+/* Floating physics symbols */
+
+.floating-symbol {
+  position: absolute;
+  color: rgba(107, 211, 255, 0.7);
+  font-size: 28px;
+  font-weight: 600;
+  text-shadow: 0 0 18px rgba(0, 174, 255, 0.8);
+  animation: symbolFloat 7s ease-in-out infinite;
+}
+
+.symbol-one {
+  top: 10%;
+  left: 12%;
+}
+
+.symbol-two {
+  top: 18%;
+  right: 8%;
+  animation-delay: -2s;
+}
+
+.symbol-three {
+  bottom: 18%;
+  right: 15%;
+  animation-delay: -4s;
+}
+
+.symbol-four {
+  bottom: 8%;
+  left: 18%;
+  animation-delay: -6s;
+}
+
+/* Floating particles */
+
+.floating-particle {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #69d9ff;
+  box-shadow:
+    0 0 10px #69d9ff,
+    0 0 25px #168cff;
+  animation: particleFloat 10s ease-in-out infinite;
+}
+
+.particle-one {
+  top: 8%;
+  left: 48%;
+}
+
+.particle-two {
+  top: 30%;
+  right: 2%;
+  animation-delay: -2s;
+}
+
+.particle-three {
+  bottom: 20%;
+  right: 8%;
+  animation-delay: -4s;
+}
+
+.particle-four {
+  bottom: 4%;
+  left: 45%;
+  animation-delay: -6s;
+}
+
+.particle-five {
+  top: 45%;
+  left: 0;
+  animation-delay: -8s;
+}
+
+.particle-six {
+  top: 70%;
+  left: 20%;
+  animation-delay: -3s;
+}
+
+/* Animations */
+
+@keyframes atomHover {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+
+  50% {
+    transform: translateY(-14px) rotate(5deg);
+  }
+}
+
+@keyframes nucleusPulse {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  50% {
+    transform: translate(-50%, -50%) scale(1.12);
+  }
+}
+
+@keyframes orbitHorizontal {
+  0% {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+
+  100% {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+@keyframes orbitDiagonal {
+  0% {
+    transform: translate(-50%, -50%) rotate(60deg) rotateZ(0deg);
+  }
+
+  100% {
+    transform: translate(-50%, -50%) rotate(60deg) rotateZ(360deg);
+  }
+}
+
+@keyframes orbitVertical {
+  0% {
+    transform: translate(-50%, -50%) rotate(-60deg) rotateZ(360deg);
+  }
+
+  100% {
+    transform: translate(-50%, -50%) rotate(-60deg) rotateZ(0deg);
+  }
+}
+
+@keyframes electronOne {
+  0% {
+    transform: rotate(0deg) translateX(128px) rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg) translateX(128px) rotate(-360deg);
+  }
+}
+
+@keyframes electronTwo {
+  0% {
+    transform: rotate(60deg) translateX(128px) rotate(-60deg);
+  }
+
+  100% {
+    transform: rotate(420deg) translateX(128px) rotate(-420deg);
+  }
+}
+
+@keyframes electronThree {
+  0% {
+    transform: rotate(-60deg) translateX(128px) rotate(60deg);
+  }
+
+  100% {
+    transform: rotate(-420deg) translateX(128px) rotate(420deg);
+  }
+}
+
+@keyframes orbFloat {
+  from {
+    transform: translate(0, 0) scale(1);
+  }
+
+  to {
+    transform: translate(30px, -25px) scale(1.2);
+  }
+}
+
+@keyframes orbPulse {
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.8;
+    transform: scale(1.4);
+  }
+}
+
+@keyframes symbolFloat {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 0.45;
+  }
+
+  50% {
+    transform: translateY(-22px) rotate(12deg);
+    opacity: 1;
+  }
+}
+
+@keyframes particleFloat {
+  0%,
+  100% {
+    transform: translate(0, 0);
+    opacity: 0.25;
+  }
+
+  50% {
+    transform: translate(25px, -40px);
+    opacity: 1;
+  }
+}
+
+/* Mobile */
+
+@media (max-width: 700px) {
+  .physics-visual {
+    width: 300px;
+    height: 300px;
+    transform: scale(0.85);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .atom,
+  .atom-nucleus,
+  .atom-orbit,
+  .electron,
+  .glow-orb,
+  .floating-symbol,
+  .floating-particle {
+    animation: none;
+  }
+}
