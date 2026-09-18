@@ -1033,13 +1033,22 @@ h4 {
   box-sizing: border-box;
 }
 .logo {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 9px;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  white-space: nowrap;
 }
 
 .logo img {
-  width: 42px;
-  height: 42px;
+  width: 38px !important;
+  height: 38px !important;
+  max-width: 38px !important;
+  max-height: 38px !important;
   object-fit: contain;
+  display: block;
+  flex-shrink: 0;
 }
