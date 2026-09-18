@@ -959,3 +959,29 @@ h4 {
     animation: none;
   }
 }
+.highlighted-document-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 22px;
+  padding: 12px 18px;
+  border: 1px solid rgba(124, 156, 255, 0.65);
+  border-radius: 999px;
+  background: linear-gradient(
+    135deg,
+    rgba(124, 156, 255, 0.25),
+    rgba(124, 156, 255, 0.08)
+  );
+  color: #b7c7ff;
+  font-weight: 800;
+  text-decoration: none;
+  box-shadow: 0 0 20px rgba(124, 156, 255, 0.12);
+  transition: 0.25s ease;
+}
+
+.highlighted-document-link:hover {
+  transform: translateY(-3px);
+  background: rgba(124, 156, 255, 0.4);
+  border-color: #9db4ff;
+  box-shadow: 0 0 28px rgba(124, 156, 255, 0.3);
+}
