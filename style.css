@@ -1255,3 +1255,37 @@ h4 {
   }
 
 }
+/* ==============================
+   ARCHIVE SEARCH
+   ============================== */
+
+.archive-search {
+  max-width: 700px;
+  margin: 0 auto 45px;
+}
+
+.archive-search input {
+  width: 100%;
+  padding: 16px 20px;
+  box-sizing: border-box;
+
+  background: rgba(15, 25, 50, 0.75);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+
+  color: var(--text);
+  font-family: "Inter", sans-serif;
+  font-size: 1rem;
+  outline: none;
+
+  transition: 0.2s ease;
+}
+
+.archive-search input::placeholder {
+  color: var(--muted);
+}
+
+.archive-search input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px rgba(102, 217, 255, 0.08);
+}
