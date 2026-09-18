@@ -1052,33 +1052,20 @@ h4 {
   display: block;
   flex-shrink: 0;
 }
-.modules-grid {
+/* Keep all semester module cards consistent */
+.module-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 20px;
-  align-items: stretch;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
 }
 
 .module-card {
-  min-height: 190px;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
+  min-height: 180px;
+  padding: 25px;
   box-sizing: border-box;
 }
 
-.module-card .module-action {
-  margin-top: auto;
-}
-
-@media (max-width: 900px) {
-  .modules-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 600px) {
-  .modules-grid {
-    grid-template-columns: 1fr;
-  }
+/* Make every card fill its grid cell */
+.module-grid .module-card {
+  width: 100%;
 }
