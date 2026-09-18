@@ -926,8 +926,25 @@ h4 {
 @media (max-width: 700px) {
   .physics-visual {
     width: 300px;
-    height: 300px;
-    transform: scale(0.85);
+    height: 280px;
+    transform: scale(0.72);
+    margin: -20px auto -35px;
+  }
+
+  .floating-symbol {
+    display: none;
+  }
+
+  .glow-orb {
+    opacity: 0.45;
+  }
+
+  .floating-particle {
+    opacity: 0.45;
+  }
+
+  .atom {
+    opacity: 0.75;
   }
 }
 
