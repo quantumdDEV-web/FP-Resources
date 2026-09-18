@@ -261,10 +261,13 @@ h4 {
 }
 
 .archive-section,
-.system-info-section {
+.system-info-section,
+.documents-section {
+  width: 100%;
   max-width: 1200px;
   margin: auto;
   padding: 100px 6%;
+  box-sizing: border-box;
 }
 
 .section-heading {
@@ -1013,4 +1016,19 @@ h4 {
     padding: 8px 10px;
     font-size: 12px;
   }
+}
+@media (max-width: 650px) {
+  .documents-section {
+    padding: 45px 24px;
+  }
+}
+.documents-section .section-heading {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.documents-section .documents-grid {
+  width: 100%;
+  box-sizing: border-box;
 }
