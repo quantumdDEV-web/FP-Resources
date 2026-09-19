@@ -274,6 +274,51 @@ h4 {
   margin-bottom: 55px;
 }
 
+.module-search {
+  position: relative;
+  max-width: 480px;
+  margin-bottom: 45px;
+}
+
+.module-search .search-icon {
+  position: absolute;
+  top: 50%;
+  left: 18px;
+  width: 18px;
+  height: 18px;
+  transform: translateY(-50%);
+  color: var(--muted);
+  pointer-events: none;
+}
+
+.module-search input {
+  width: 100%;
+  padding: 14px 18px 14px 48px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--card);
+  color: var(--text);
+  font-family: "Inter", sans-serif;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.25s ease, background 0.25s ease;
+}
+
+.module-search input::placeholder {
+  color: var(--muted);
+}
+
+.module-search input:focus {
+  border-color: rgba(102, 217, 255, 0.65);
+  background: var(--card-hover);
+}
+
+.module-search-empty {
+  margin: -20px 0 45px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
 .semester-block {
   margin-bottom: 75px;
 }
