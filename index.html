@@ -44,9 +44,53 @@
   >
     Upload Document
   </a>
+
+  <button id="nav-login-btn" class="nav-auth-btn">Log In</button>
+
+  <div id="nav-user-badge" class="nav-user-badge" hidden>
+    <span id="nav-user-email"></span>
+    <button id="nav-logout-btn" class="nav-logout-btn">Log Out</button>
+  </div>
 </nav>
     </div>
   </header>
+
+  <!-- Auth Modal -->
+  <div id="auth-modal" class="auth-modal" hidden>
+    <div class="auth-modal-backdrop" data-close-modal></div>
+    <div class="auth-modal-box">
+      <button class="auth-modal-close" data-close-modal aria-label="Close">×</button>
+
+      <div class="auth-tabs">
+        <button class="auth-tab active" data-tab="signin">Log In</button>
+        <button class="auth-tab" data-tab="signup">Sign Up</button>
+      </div>
+
+      <form id="auth-form-signin" class="auth-form">
+        <label for="signin-email">Email</label>
+        <input type="email" id="signin-email" required placeholder="you@example.com" />
+
+        <label for="signin-password">Password</label>
+        <input type="password" id="signin-password" required placeholder="••••••••" />
+
+        <p class="auth-error" id="signin-error" hidden></p>
+
+        <button type="submit" class="button primary-button auth-submit">Log In</button>
+      </form>
+
+      <form id="auth-form-signup" class="auth-form" hidden>
+        <label for="signup-email">Email</label>
+        <input type="email" id="signup-email" required placeholder="you@example.com" />
+
+        <label for="signup-password">Password</label>
+        <input type="password" id="signup-password" required placeholder="At least 6 characters" minlength="6" />
+
+        <p class="auth-error" id="signup-error" hidden></p>
+
+        <button type="submit" class="button primary-button auth-submit">Create Account</button>
+      </form>
+    </div>
+  </div>
 
 
   <!-- Hero Section -->
@@ -156,6 +200,14 @@
       </div>
       <p id="module-search-empty" class="module-search-empty" hidden>
         No modules match your search.
+      </p>
+
+      <label class="favorites-toggle">
+        <input type="checkbox" id="favorites-only-checkbox" />
+        <span>★ Show my favorites only</span>
+      </label>
+      <p id="favorites-login-hint" class="favorites-login-hint" hidden>
+        Log in to save and view your favorite modules.
       </p>
 
 
@@ -815,16 +867,35 @@
     </div>
   </footer>
 
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+
   <script>
+    // ---- Firebase setup ----
+    const firebaseConfig = {
+      apiKey: "AIzaSyBYYltWp3M-yROD1UFcRdczbNIWmDWW31I",
+      authDomain: "fp-library.firebaseapp.com",
+      projectId: "fp-library",
+      storageBucket: "fp-library.firebasestorage.app",
+      messagingSenderId: "1072034241179",
+      appId: "1:1072034241179:web:3612b3a4cad39ac964043e"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    // ---- Module search (existing) ----
     (function () {
       const input = document.getElementById('module-search-input');
       const emptyMessage = document.getElementById('module-search-empty');
       const semesterBlocks = Array.from(document.querySelectorAll('.semester-block'));
-
       if (!input) return;
 
-      input.addEventListener('input', function () {
+      window.applyModuleFilters = function () {
         const query = input.value.trim().toLowerCase();
+        const favoritesOnly = document.getElementById('favorites-only-checkbox').checked;
         let totalVisible = 0;
 
         semesterBlocks.forEach(function (block) {
@@ -833,9 +904,11 @@
 
           cards.forEach(function (card) {
             const text = card.textContent.toLowerCase();
-            const matches = query === '' || text.includes(query);
-            card.style.display = matches ? '' : 'none';
-            if (matches) visibleInBlock += 1;
+            const matchesQuery = query === '' || text.includes(query);
+            const matchesFavorite = !favoritesOnly || card.classList.contains('is-favorited');
+            const visible = matchesQuery && matchesFavorite;
+            card.style.display = visible ? '' : 'none';
+            if (visible) visibleInBlock += 1;
           });
 
           totalVisible += visibleInBlock;
@@ -843,8 +916,177 @@
         });
 
         emptyMessage.hidden = totalVisible !== 0;
-      });
+      };
+
+      input.addEventListener('input', window.applyModuleFilters);
+      document.getElementById('favorites-only-checkbox').addEventListener('change', window.applyModuleFilters);
     })();
+
+    // ---- Favorite stars on module cards ----
+    (function () {
+      const cards = Array.from(document.querySelectorAll('.module-card'));
+
+      cards.forEach(function (card, index) {
+        const codeEl = card.querySelector('.module-code');
+        const moduleId = codeEl
+          ? codeEl.textContent.trim().replace(/[^a-zA-Z0-9]+/g, '-')
+          : 'module-' + index;
+        card.dataset.moduleId = moduleId;
+
+        const star = document.createElement('button');
+        star.type = 'button';
+        star.className = 'favorite-star';
+        star.setAttribute('aria-label', 'Toggle favorite');
+        star.textContent = '☆';
+
+        star.addEventListener('click', function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+
+          const user = auth.currentUser;
+          if (!user) {
+            openAuthModal('signin');
+            return;
+          }
+
+          const isFav = card.classList.contains('is-favorited');
+          const ref = db.collection('favorites').doc(user.uid);
+
+          if (isFav) {
+            ref.set(
+              { modules: firebase.firestore.FieldValue.arrayRemove(moduleId) },
+              { merge: true }
+            );
+            card.classList.remove('is-favorited');
+            star.textContent = '☆';
+          } else {
+            ref.set(
+              { modules: firebase.firestore.FieldValue.arrayUnion(moduleId) },
+              { merge: true }
+            );
+            card.classList.add('is-favorited');
+            star.textContent = '★';
+          }
+
+          if (document.getElementById('favorites-only-checkbox').checked) {
+            window.applyModuleFilters();
+          }
+        });
+
+        card.style.position = 'relative';
+        card.appendChild(star);
+      });
+
+      window.loadUserFavorites = function (uid) {
+        db.collection('favorites').doc(uid).get().then(function (doc) {
+          const favIds = (doc.exists && doc.data().modules) || [];
+          cards.forEach(function (card) {
+            const star = card.querySelector('.favorite-star');
+            if (favIds.includes(card.dataset.moduleId)) {
+              card.classList.add('is-favorited');
+              star.textContent = '★';
+            } else {
+              card.classList.remove('is-favorited');
+              star.textContent = '☆';
+            }
+          });
+        });
+      };
+
+      window.clearUserFavorites = function () {
+        cards.forEach(function (card) {
+          card.classList.remove('is-favorited');
+          card.querySelector('.favorite-star').textContent = '☆';
+        });
+      };
+    })();
+
+    // ---- Auth modal ----
+    const authModal = document.getElementById('auth-modal');
+    const loginBtn = document.getElementById('nav-login-btn');
+    const logoutBtn = document.getElementById('nav-logout-btn');
+    const userBadge = document.getElementById('nav-user-badge');
+    const userEmailEl = document.getElementById('nav-user-email');
+    const favLoginHint = document.getElementById('favorites-login-hint');
+    const favCheckbox = document.getElementById('favorites-only-checkbox');
+
+    function openAuthModal(tab) {
+      authModal.hidden = false;
+      setAuthTab(tab || 'signin');
+    }
+    function closeAuthModal() {
+      authModal.hidden = true;
+      document.getElementById('signin-error').hidden = true;
+      document.getElementById('signup-error').hidden = true;
+    }
+    function setAuthTab(tab) {
+      document.querySelectorAll('.auth-tab').forEach(function (btn) {
+        btn.classList.toggle('active', btn.dataset.tab === tab);
+      });
+      document.getElementById('auth-form-signin').hidden = tab !== 'signin';
+      document.getElementById('auth-form-signup').hidden = tab !== 'signup';
+    }
+
+    loginBtn.addEventListener('click', function () { openAuthModal('signin'); });
+    document.querySelectorAll('[data-close-modal]').forEach(function (el) {
+      el.addEventListener('click', closeAuthModal);
+    });
+    document.querySelectorAll('.auth-tab').forEach(function (btn) {
+      btn.addEventListener('click', function () { setAuthTab(btn.dataset.tab); });
+    });
+
+    document.getElementById('auth-form-signin').addEventListener('submit', function (e) {
+      e.preventDefault();
+      const email = document.getElementById('signin-email').value;
+      const password = document.getElementById('signin-password').value;
+      const errorEl = document.getElementById('signin-error');
+      errorEl.hidden = true;
+
+      auth.signInWithEmailAndPassword(email, password)
+        .then(function () { closeAuthModal(); })
+        .catch(function (err) {
+          errorEl.textContent = err.message;
+          errorEl.hidden = false;
+        });
+    });
+
+    document.getElementById('auth-form-signup').addEventListener('submit', function (e) {
+      e.preventDefault();
+      const email = document.getElementById('signup-email').value;
+      const password = document.getElementById('signup-password').value;
+      const errorEl = document.getElementById('signup-error');
+      errorEl.hidden = true;
+
+      auth.createUserWithEmailAndPassword(email, password)
+        .then(function () { closeAuthModal(); })
+        .catch(function (err) {
+          errorEl.textContent = err.message;
+          errorEl.hidden = false;
+        });
+    });
+
+    logoutBtn.addEventListener('click', function () {
+      auth.signOut();
+    });
+
+    auth.onAuthStateChanged(function (user) {
+      if (user) {
+        loginBtn.hidden = true;
+        userBadge.hidden = false;
+        userEmailEl.textContent = user.email;
+        favLoginHint.hidden = true;
+        favCheckbox.disabled = false;
+        window.loadUserFavorites(user.uid);
+      } else {
+        loginBtn.hidden = false;
+        userBadge.hidden = true;
+        favCheckbox.checked = false;
+        favCheckbox.disabled = true;
+        favLoginHint.hidden = false;
+        window.clearUserFavorites();
+        window.applyModuleFilters();
+      }
+    });
   </script>
 
 </body>
