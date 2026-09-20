@@ -48,6 +48,8 @@
   <button id="nav-login-btn" class="nav-auth-btn">Log In</button>
 
   <div id="nav-user-badge" class="nav-user-badge" hidden>
+    <button id="nav-students-btn" class="nav-logout-btn">Students</button>
+    <button id="nav-profile-btn" class="nav-logout-btn">My Profile</button>
     <span id="nav-user-email"></span>
     <button id="nav-logout-btn" class="nav-logout-btn">Log Out</button>
   </div>
@@ -152,6 +154,91 @@
     </div>
   </div>
 
+
+  <!-- People Modal: My Profile / Students directory / other user's profile -->
+  <div id="people-modal" class="auth-modal">
+    <div class="auth-modal-backdrop" data-close-people></div>
+    <div class="auth-modal-box people-modal-box">
+      <button class="auth-modal-close" data-close-people aria-label="Close">×</button>
+
+      <!-- My profile (editable) -->
+      <div id="people-view-me" hidden>
+        <h3 class="profile-modal-title">My Profile</h3>
+        <p class="profile-modal-subtitle">This is what other students see when they open your profile.</p>
+
+        <div class="profile-hero">
+          <div id="pm-avatar" class="profile-avatar">?</div>
+          <div class="profile-hero-text">
+            <strong id="pm-preview-name">—</strong>
+            <span id="pm-preview-year" class="profile-year-chip"></span>
+          </div>
+        </div>
+
+        <form id="people-profile-form" class="auth-form">
+          <div class="auth-form-row">
+            <div>
+              <label for="pm-firstname">First Name</label>
+              <input type="text" id="pm-firstname" required maxlength="40" />
+            </div>
+            <div>
+              <label for="pm-lastname">Last Name</label>
+              <input type="text" id="pm-lastname" maxlength="40" />
+            </div>
+          </div>
+
+          <label for="pm-year">Year of Study</label>
+          <select id="pm-year" required>
+            <option value="" disabled selected>Select your year</option>
+            <option value="S1">Semester 1</option>
+            <option value="S2">Semester 2</option>
+            <option value="S3">Semester 3</option>
+            <option value="S4">Semester 4</option>
+            <option value="Master 1">Master 1</option>
+            <option value="Master 2">Master 2</option>
+            <option value="Other">Other</option>
+          </select>
+
+          <label for="pm-bio">Bio</label>
+          <textarea id="pm-bio" rows="5" maxlength="300" placeholder="Tell other students a bit about yourself: interests, favorite modules, what you're working on…"></textarea>
+          <span class="profile-counter"><span id="pm-bio-count">0</span>/300</span>
+
+          <p class="auth-error" id="pm-error" hidden></p>
+          <p class="profile-success" id="pm-success" hidden>Profile saved ✓</p>
+
+          <button type="submit" class="button primary-button auth-submit" id="pm-save-btn">Save Changes</button>
+        </form>
+      </div>
+
+      <!-- Students directory -->
+      <div id="people-view-directory" hidden>
+        <h3 class="profile-modal-title">Students</h3>
+        <p class="profile-modal-subtitle">Browse the FP Library community.</p>
+
+        <input type="search" id="people-search" class="people-search" placeholder="Search by name or year…" autocomplete="off" />
+
+        <div id="people-list" class="people-list" aria-live="polite"></div>
+        <p id="people-empty" class="people-empty" hidden>No students found.</p>
+      </div>
+
+      <!-- Another user's profile (read-only) -->
+      <div id="people-view-user" hidden>
+        <button type="button" id="people-back-btn" class="people-back-btn">← All students</button>
+
+        <div class="profile-hero profile-hero-large">
+          <div id="pu-avatar" class="profile-avatar profile-avatar-large">?</div>
+          <div class="profile-hero-text">
+            <strong id="pu-name">—</strong>
+            <span id="pu-year" class="profile-year-chip"></span>
+          </div>
+        </div>
+
+        <h4 class="profile-section-title">About</h4>
+        <p id="pu-bio" class="profile-bio"></p>
+
+        <button type="button" id="pu-edit-btn" class="button primary-button auth-submit" hidden>Edit my profile</button>
+      </div>
+    </div>
+  </div>
 
   <!-- Hero Section -->
   <main>
@@ -1176,7 +1263,8 @@
               lastName: lastName,
               year: year,
               email: email
-            })
+            }),
+            savePublicProfile(cred.user.uid, { firstName: firstName, lastName: lastName, year: year })
           ]);
         })
         .then(function () { closeAuthModal(); })
@@ -1206,12 +1294,15 @@
         const firstName = nameParts[0] || 'there';
         const lastName = nameParts.slice(1).join(' ');
 
-        return ref.set({
-          firstName: firstName,
-          lastName: lastName,
-          year: null,
-          email: user.email
-        }).then(function () {
+        return Promise.all([
+          ref.set({
+            firstName: firstName,
+            lastName: lastName,
+            year: null,
+            email: user.email
+          }),
+          savePublicProfile(user.uid, { firstName: firstName, lastName: lastName, year: null })
+        ]).then(function () {
           return { firstName: firstName, lastName: lastName, year: null, email: user.email };
         });
       }).then(function (data) {
@@ -1228,7 +1319,10 @@
       if (!profileModalUid) return;
       const year = document.getElementById('profile-year').value;
 
-      db.collection('users').doc(profileModalUid).set({ year: year }, { merge: true })
+      Promise.all([
+        db.collection('users').doc(profileModalUid).set({ year: year }, { merge: true }),
+        savePublicProfile(profileModalUid, { year: year })
+      ])
         .then(function () {
           profileModal.classList.remove('is-open');
           profileModalUid = null;
@@ -1256,6 +1350,7 @@
         favLoginHint.hidden = true;
         favCheckbox.disabled = false;
         window.loadUserFavorites(user.uid);
+        backfillPublicProfile(user.uid);
 
         db.collection('users').doc(user.uid).get().then(function (doc) {
           if (doc.exists) {
@@ -1273,7 +1368,258 @@
         window.clearUserFavorites();
         window.applyModuleFilters();
         hideWelcomeBanner();
+        closePeopleModal();
+        peopleCache = null;
       }
+    });
+
+    // =====================================================
+    // ---- Profiles: My Profile, Students directory, view others ----
+    // Public data lives in `publicProfiles/{uid}` (no email!).
+    // Private data (email) stays in `users/{uid}`.
+    // =====================================================
+    const peopleModal = document.getElementById('people-modal');
+    const viewMe = document.getElementById('people-view-me');
+    const viewDir = document.getElementById('people-view-directory');
+    const viewUser = document.getElementById('people-view-user');
+    const peopleList = document.getElementById('people-list');
+    const peopleEmpty = document.getElementById('people-empty');
+    const peopleSearch = document.getElementById('people-search');
+    const pmBio = document.getElementById('pm-bio');
+    let peopleCache = null; // [{uid, firstName, lastName, year, bio}]
+
+    function savePublicProfile(uid, fields) {
+      const data = Object.assign({}, fields, {
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      return db.collection('publicProfiles').doc(uid).set(data, { merge: true });
+    }
+
+    // Existing accounts made before this feature get a public profile automatically
+    function backfillPublicProfile(uid) {
+      const pubRef = db.collection('publicProfiles').doc(uid);
+      pubRef.get().then(function (pub) {
+        if (pub.exists) return;
+        return db.collection('users').doc(uid).get().then(function (doc) {
+          if (!doc.exists) return; // brand-new signup: signup flow writes it
+          const d = doc.data();
+          return savePublicProfile(uid, {
+            firstName: d.firstName || '',
+            lastName: d.lastName || '',
+            year: d.year || null,
+            bio: ''
+          });
+        });
+      }).catch(function (err) { console.error('Public profile backfill failed:', err); });
+    }
+
+    function fullName(p) {
+      return ((p.firstName || '') + ' ' + (p.lastName || '')).trim() || 'Student';
+    }
+    function initials(p) {
+      const a = (p.firstName || '').charAt(0);
+      const b = (p.lastName || '').charAt(0);
+      return ((a + b).toUpperCase()) || '?';
+    }
+    function setAvatar(el, p) {
+      el.textContent = initials(p);
+    }
+
+    function showPeopleView(name) {
+      viewMe.hidden = name !== 'me';
+      viewDir.hidden = name !== 'directory';
+      viewUser.hidden = name !== 'user';
+      peopleModal.classList.add('is-open');
+    }
+    function closePeopleModal() {
+      peopleModal.classList.remove('is-open');
+    }
+
+    // ----- My profile -----
+    function updateMyPreview() {
+      const p = {
+        firstName: document.getElementById('pm-firstname').value.trim(),
+        lastName: document.getElementById('pm-lastname').value.trim()
+      };
+      setAvatar(document.getElementById('pm-avatar'), p);
+      document.getElementById('pm-preview-name').textContent = fullName(p);
+      const y = document.getElementById('pm-year').value;
+      document.getElementById('pm-preview-year').textContent = y;
+      document.getElementById('pm-preview-year').hidden = !y;
+      document.getElementById('pm-bio-count').textContent = pmBio.value.length;
+    }
+
+    function openMyProfile() {
+      const user = auth.currentUser;
+      if (!user) return openAuthModal('signin');
+      document.getElementById('pm-error').hidden = true;
+      document.getElementById('pm-success').hidden = true;
+      showPeopleView('me');
+
+      Promise.all([
+        db.collection('users').doc(user.uid).get(),
+        db.collection('publicProfiles').doc(user.uid).get()
+      ]).then(function (res) {
+        const priv = res[0].exists ? res[0].data() : {};
+        const pub = res[1].exists ? res[1].data() : {};
+        const nameParts = (user.displayName || '').trim().split(' ');
+        document.getElementById('pm-firstname').value = pub.firstName || priv.firstName || nameParts[0] || '';
+        document.getElementById('pm-lastname').value = pub.lastName || priv.lastName || nameParts.slice(1).join(' ') || '';
+        document.getElementById('pm-year').value = pub.year || priv.year || '';
+        pmBio.value = pub.bio || '';
+        updateMyPreview();
+      }).catch(function (err) {
+        console.error('Could not load profile:', err);
+        const e = document.getElementById('pm-error');
+        e.textContent = 'Could not load your profile. Please try again.';
+        e.hidden = false;
+      });
+    }
+
+    ['pm-firstname', 'pm-lastname', 'pm-year', 'pm-bio'].forEach(function (id) {
+      document.getElementById(id).addEventListener('input', updateMyPreview);
+      document.getElementById(id).addEventListener('change', updateMyPreview);
+    });
+
+    document.getElementById('people-profile-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      const user = auth.currentUser;
+      if (!user) return;
+      const errEl = document.getElementById('pm-error');
+      const okEl = document.getElementById('pm-success');
+      const btn = document.getElementById('pm-save-btn');
+      errEl.hidden = true; okEl.hidden = true;
+
+      const fields = {
+        firstName: document.getElementById('pm-firstname').value.trim(),
+        lastName: document.getElementById('pm-lastname').value.trim(),
+        year: document.getElementById('pm-year').value,
+        bio: pmBio.value.trim().slice(0, 300)
+      };
+
+      btn.disabled = true;
+      btn.textContent = 'Saving…';
+      Promise.all([
+        savePublicProfile(user.uid, fields),
+        db.collection('users').doc(user.uid).set({
+          firstName: fields.firstName,
+          lastName: fields.lastName,
+          year: fields.year
+        }, { merge: true }),
+        user.updateProfile({ displayName: (fields.firstName + ' ' + fields.lastName).trim() })
+      ]).then(function () {
+        okEl.hidden = false;
+        peopleCache = null; // refresh directory next time
+        showWelcomeBanner(fields.firstName);
+      }).catch(function (err) {
+        console.error('Saving profile failed:', err);
+        errEl.textContent = 'Could not save your profile. ' + (err.code === 'permission-denied' ? 'Permission denied: check your Firestore rules.' : 'Please try again.');
+        errEl.hidden = false;
+      }).then(function () {
+        btn.disabled = false;
+        btn.textContent = 'Save Changes';
+      });
+    });
+
+    // ----- Students directory -----
+    function renderPeople() {
+      const q = peopleSearch.value.trim().toLowerCase();
+      peopleList.textContent = '';
+      const me = auth.currentUser ? auth.currentUser.uid : null;
+      const shown = (peopleCache || []).filter(function (p) {
+        if (!q) return true;
+        return (fullName(p) + ' ' + (p.year || '')).toLowerCase().indexOf(q) !== -1;
+      });
+      peopleEmpty.hidden = shown.length > 0;
+
+      shown.forEach(function (p) {
+        const card = document.createElement('button');
+        card.type = 'button';
+        card.className = 'people-card';
+
+        const av = document.createElement('div');
+        av.className = 'profile-avatar profile-avatar-small';
+        setAvatar(av, p);
+
+        const info = document.createElement('div');
+        info.className = 'people-card-info';
+        const nm = document.createElement('strong');
+        nm.textContent = fullName(p) + (p.uid === me ? ' (you)' : '');
+        info.appendChild(nm);
+        if (p.year) {
+          const yr = document.createElement('span');
+          yr.className = 'people-card-year';
+          yr.textContent = p.year;
+          info.appendChild(yr);
+        }
+        if (p.bio) {
+          const bio = document.createElement('span');
+          bio.className = 'people-card-bio';
+          bio.textContent = p.bio;
+          info.appendChild(bio);
+        }
+
+        card.appendChild(av);
+        card.appendChild(info);
+        card.addEventListener('click', function () { openUserProfile(p); });
+        peopleList.appendChild(card);
+      });
+    }
+
+    function openDirectory() {
+      if (!auth.currentUser) return openAuthModal('signin');
+      showPeopleView('directory');
+      peopleSearch.value = '';
+
+      if (peopleCache) { renderPeople(); return; }
+
+      peopleList.textContent = 'Loading…';
+      peopleEmpty.hidden = true;
+      db.collection('publicProfiles').limit(300).get().then(function (snap) {
+        peopleCache = snap.docs.map(function (d) {
+          return Object.assign({ uid: d.id }, d.data());
+        }).sort(function (a, b) {
+          return fullName(a).localeCompare(fullName(b));
+        });
+        renderPeople();
+      }).catch(function (err) {
+        console.error('Could not load students:', err);
+        peopleList.textContent = err.code === 'permission-denied'
+          ? 'Permission denied: update your Firestore rules to allow signed-in users to read publicProfiles.'
+          : 'Could not load students. Please try again.';
+      });
+    }
+
+    peopleSearch.addEventListener('input', renderPeople);
+
+    // ----- Another user's profile -----
+    function openUserProfile(p) {
+      setAvatar(document.getElementById('pu-avatar'), p);
+      document.getElementById('pu-name').textContent = fullName(p);
+      const yearEl = document.getElementById('pu-year');
+      yearEl.textContent = p.year || '';
+      yearEl.hidden = !p.year;
+      const bioEl = document.getElementById('pu-bio');
+      bioEl.textContent = p.bio || 'This student hasn\'t written a bio yet.';
+      bioEl.classList.toggle('is-empty', !p.bio);
+      document.getElementById('pu-edit-btn').hidden = !(auth.currentUser && auth.currentUser.uid === p.uid);
+      showPeopleView('user');
+    }
+
+    document.getElementById('people-back-btn').addEventListener('click', openDirectory);
+    document.getElementById('pu-edit-btn').addEventListener('click', openMyProfile);
+
+    // ----- Wiring -----
+    document.getElementById('nav-profile-btn').addEventListener('click', openMyProfile);
+    document.getElementById('nav-students-btn').addEventListener('click', openDirectory);
+    document.querySelectorAll('[data-close-people]').forEach(function (el) {
+      el.addEventListener('click', function (e) { e.preventDefault(); closePeopleModal(); });
+    });
+    peopleModal.addEventListener('click', function (e) {
+      if (e.target === peopleModal) closePeopleModal();
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && peopleModal.classList.contains('is-open')) closePeopleModal();
     });
   </script>
 
