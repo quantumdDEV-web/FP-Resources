@@ -92,7 +92,10 @@
         <label for="signin-password">Password</label>
         <input type="password" id="signin-password" required placeholder="••••••••" />
 
+        <button type="button" id="forgot-password-btn" class="auth-link-btn">Forgot password?</button>
+
         <p class="auth-error" id="signin-error" hidden></p>
+        <p class="auth-success" id="signin-success" hidden></p>
 
         <button type="submit" class="button primary-button auth-submit">Log In</button>
       </form>
@@ -1226,6 +1229,7 @@
 
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-check-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
 
@@ -1240,6 +1244,18 @@
       appId: "1:1072034241179:web:3612b3a4cad39ac964043e"
     };
     firebase.initializeApp(firebaseConfig);
+
+    // ---- App Check ----
+    // Replace RECAPTCHA_V3_SITE_KEY below with the site key from Firebase Console ->
+    // App Check -> Apps -> your web app -> reCAPTCHA v3 provider. Until you do that,
+    // this call fails silently and every request goes through unprotected — it does
+    // NOT block your app from working, so nothing breaks if you deploy before the
+    // key is ready, but it also isn't protecting anything until the real key is in.
+    firebase.appCheck().activate(
+      'RECAPTCHA_V3_SITE_KEY',
+      true // auto-refresh the token
+    );
+
     const auth = firebase.auth();
     const db = firebase.firestore();
 
@@ -1446,13 +1462,61 @@
       const email = document.getElementById('signin-email').value;
       const password = document.getElementById('signin-password').value;
       const errorEl = document.getElementById('signin-error');
+      const successEl = document.getElementById('signin-success');
       errorEl.hidden = true;
+      successEl.hidden = true;
 
       auth.signInWithEmailAndPassword(email, password)
-        .then(function () { closeAuthModal(); })
+        .then(function (cred) {
+          if (!cred.user.emailVerified) {
+            // Don't leave them signed in with an unverified address — send them
+            // a fresh link and log them straight back out.
+            return cred.user.sendEmailVerification()
+              .catch(function () { /* rate-limited resend, ignore */ })
+              .then(function () { return auth.signOut(); })
+              .then(function () {
+                errorEl.textContent = 'Please verify your email first. We just sent you a new link — check your inbox.';
+                errorEl.hidden = false;
+              });
+          }
+          closeAuthModal();
+        })
         .catch(function (err) {
           errorEl.textContent = err.message;
           errorEl.hidden = false;
+        });
+    });
+
+    document.getElementById('forgot-password-btn').addEventListener('click', function () {
+      const emailInput = document.getElementById('signin-email');
+      const errorEl = document.getElementById('signin-error');
+      const successEl = document.getElementById('signin-success');
+      errorEl.hidden = true;
+      successEl.hidden = true;
+
+      const email = emailInput.value.trim();
+      if (!email) {
+        errorEl.textContent = 'Enter your email above first, then tap "Forgot password?" again.';
+        errorEl.hidden = false;
+        emailInput.focus();
+        return;
+      }
+
+      auth.sendPasswordResetEmail(email)
+        .then(function () {
+          successEl.textContent = 'Password reset email sent. Check your inbox (and spam folder).';
+          successEl.hidden = false;
+        })
+        .catch(function (err) {
+          // Firebase's default message reveals whether an email is registered.
+          // Show a generic message instead so account existence can't be probed.
+          if (err.code === 'auth/user-not-found') {
+            successEl.textContent = 'If that email has an account, a reset link is on its way.';
+            successEl.hidden = false;
+          } else {
+            errorEl.textContent = err.message;
+            errorEl.hidden = false;
+          }
         });
     });
 
@@ -1468,23 +1532,35 @@
 
       auth.createUserWithEmailAndPassword(email, password)
         .then(function (cred) {
+          const user = cred.user;
           return Promise.all([
-            cred.user.updateProfile({ displayName: firstName + ' ' + lastName }),
-            db.collection('users').doc(cred.user.uid).set({
+            user.updateProfile({ displayName: firstName + ' ' + lastName }),
+            db.collection('users').doc(user.uid).set({
               firstName: firstName,
               lastName: lastName,
               year: year,
               email: email
             }),
-            savePublicProfile(cred.user.uid, { firstName: firstName, lastName: lastName, year: year }),
+            savePublicProfile(user.uid, { firstName: firstName, lastName: lastName, year: year }),
             // Banner counter. Non-critical, so a failure here must not block signup.
             db.collection('stats').doc('site').update({
               students: firebase.firestore.FieldValue.increment(1),
               updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-            }).catch(function () {})
-          ]);
+            }).catch(function () {}),
+            user.sendEmailVerification()
+          ]).then(function () {
+            // Sign out right away: the account exists, but they shouldn't be able
+            // to use the site until they've clicked the verification link.
+            return auth.signOut();
+          });
         })
-        .then(function () { closeAuthModal(); })
+        .then(function () {
+          closeAuthModal();
+          setAuthTab('signin');
+          const successEl = document.getElementById('signin-success');
+          successEl.textContent = 'Account created! Check your email (' + email + ') for a verification link before logging in.';
+          successEl.hidden = false;
+        })
         .catch(function (err) {
           errorEl.textContent = err.message;
           errorEl.hidden = false;
