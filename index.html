@@ -33,6 +33,7 @@
   <a href="#home">Home</a>
   <a href="#archive">Archive</a>
   <a href="#community-documents">Community Documents</a>
+  <a href="#professors">Professors</a>
   <a href="#system-info">About</a>
   <a href="#founders">Founders</a>
 
@@ -264,6 +265,77 @@
           <button type="submit" id="chat-send-btn" class="button primary-button chat-send">Send</button>
         </form>
         <p class="auth-error" id="chat-error" hidden></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Professor Modal: add professor / professor details + reviews -->
+  <div id="prof-modal" class="auth-modal">
+    <div class="auth-modal-backdrop" data-close-prof></div>
+    <div class="auth-modal-box people-modal-box prof-modal-box">
+      <button class="auth-modal-close" data-close-prof aria-label="Close">×</button>
+
+      <!-- Add a professor -->
+      <div id="prof-view-add" hidden>
+        <h3 class="profile-modal-title">Add a professor</h3>
+        <p class="profile-modal-subtitle">Can't find them in the list? Add them so students can review them.</p>
+        <form id="prof-add-form" class="auth-form">
+          <label for="pa-name">Professor's name</label>
+          <input type="text" id="pa-name" required minlength="3" maxlength="60" placeholder="e.g. Dr. Ahmed Benali" />
+
+          <label for="pa-dept">Department (optional)</label>
+          <input type="text" id="pa-dept" list="pa-dept-list" maxlength="60" placeholder="e.g. Physics" />
+          <datalist id="pa-dept-list">
+            <option value="Physics"></option>
+            <option value="Mathematics"></option>
+            <option value="Chemistry"></option>
+            <option value="Biology"></option>
+            <option value="Geology"></option>
+            <option value="Computer Science"></option>
+            <option value="Languages"></option>
+          </datalist>
+
+          <p class="auth-error" id="pa-error" hidden></p>
+          <button type="submit" id="pa-save-btn" class="button primary-button auth-submit">Add professor</button>
+        </form>
+      </div>
+
+      <!-- Professor details + reviews -->
+      <div id="prof-view-detail" hidden>
+        <div class="prof-detail-head">
+          <div class="prof-detail-info">
+            <h3 id="pd-name"></h3>
+            <span id="pd-dept" class="profile-year-chip"></span>
+          </div>
+          <div class="prof-detail-score">
+            <strong id="pd-avg">–</strong>
+            <span id="pd-stars"></span>
+            <span id="pd-count" class="prof-count"></span>
+          </div>
+        </div>
+
+        <h4 class="profile-section-title" id="rv-form-title">Write a review</h4>
+        <form id="review-form" class="auth-form">
+          <div class="star-row">
+            <div id="rv-stars" class="star-input" role="group" aria-label="Your rating"></div>
+            <span id="rv-rating-label" class="star-label">Tap a star</span>
+          </div>
+
+          <textarea id="rv-comment" rows="4" maxlength="500" required placeholder="Describe your experience: teaching style, clarity, exams, availability… (10–500 characters)"></textarea>
+          <span class="profile-counter"><span id="rv-count">0</span>/500</span>
+
+          <label class="rv-anon"><input type="checkbox" id="rv-anon" checked /> Post anonymously</label>
+          <p class="rv-anon-note">Anonymous reviews don't show your name to other students.</p>
+
+          <p class="auth-error" id="rv-error" hidden></p>
+          <p class="profile-success" id="rv-success" hidden>Saved ✓</p>
+
+          <button type="submit" id="rv-submit-btn" class="button primary-button auth-submit">Post review</button>
+          <button type="button" id="rv-delete-btn" class="profile-skip-btn" hidden>Delete my review</button>
+        </form>
+
+        <h4 class="profile-section-title prof-reviews-title">Reviews</h4>
+        <div id="pd-reviews" class="prof-reviews"></div>
       </div>
     </div>
   </div>
@@ -820,6 +892,43 @@
 </a>
   </div>
 </section>
+<!-- PROFESSORS SECTION -->
+<section class="documents-section prof-section" id="professors">
+  <div class="section-heading">
+    <span class="section-label">Student reviews</span>
+    <h2>Rate Your Professors</h2>
+    <p>
+      Share honest, respectful feedback about professors in your department and
+      help other students know what to expect. You can post anonymously.
+    </p>
+  </div>
+
+  <div id="prof-gate" class="prof-gate">
+    <p>Log in to see professor ratings and write your own review.</p>
+    <button type="button" id="prof-login-btn" class="button primary-button">Log In</button>
+  </div>
+
+  <div id="prof-content" hidden>
+    <div class="prof-toolbar">
+      <input type="search" id="prof-search" class="prof-search" placeholder="Search professors or departments…" autocomplete="off" />
+      <select id="prof-sort" class="prof-sort" aria-label="Sort professors">
+        <option value="top">Top rated</option>
+        <option value="reviews">Most reviewed</option>
+        <option value="az">A → Z</option>
+      </select>
+      <button type="button" id="prof-add-btn" class="button primary-button">+ Add a professor</button>
+    </div>
+
+    <p class="prof-guidelines">
+      Be respectful and constructive: talk about teaching, not personal life.
+      Insults or false claims can be reported and removed.
+    </p>
+
+    <div id="prof-grid" class="prof-grid" aria-live="polite"></div>
+    <p id="prof-empty" class="people-empty" hidden>No professors found. Use “Add a professor” to create one.</p>
+  </div>
+</section>
+
       <!-- FOUNDERS SECTION -->
 <section class="founders-section" id="founders">
 
@@ -1380,6 +1489,7 @@
         window.loadUserFavorites(user.uid);
         backfillPublicProfile(user.uid);
         startInboxListener(user.uid);
+        onProfessorsAuth(user);
 
         db.collection('users').doc(user.uid).get().then(function (doc) {
           if (doc.exists) {
@@ -1398,6 +1508,7 @@
         window.applyModuleFilters();
         hideWelcomeBanner();
         stopInboxListener();
+        onProfessorsAuth(null);
         closePeopleModal();
         peopleCache = null;
       }
@@ -1962,6 +2073,543 @@
     document.getElementById('chat-back-btn').addEventListener('click', openInbox);
     document.getElementById('pu-message-btn').addEventListener('click', function () {
       if (viewedProfile) openChat(viewedProfile.uid, fullName(viewedProfile));
+    });
+
+    // =====================================================
+    // ---- Professor ratings ----
+    // professors/{slug}                 -> name, nameLower, department, createdAt
+    // professorReviews/{id}             -> professorId, rating, comment, anonymous, createdAt, (authorId only if NOT anonymous)
+    // reviewOwners/{professorId_uid}    -> private link (only the owner can read) used for "one review per professor" + edit/delete
+    // reviewReports/{reviewId_uid}      -> reports (write-only for users; you read them in the console)
+    // =====================================================
+    const profSection = document.getElementById('professors');
+    const profGate = document.getElementById('prof-gate');
+    const profContent = document.getElementById('prof-content');
+    const profGrid = document.getElementById('prof-grid');
+    const profEmpty = document.getElementById('prof-empty');
+    const profSearch = document.getElementById('prof-search');
+    const profSort = document.getElementById('prof-sort');
+    const profModal = document.getElementById('prof-modal');
+    const profViewAdd = document.getElementById('prof-view-add');
+    const profViewDetail = document.getElementById('prof-view-detail');
+    const rvComment = document.getElementById('rv-comment');
+    const RATING_WORDS = ['Tap a star', 'Poor', 'Fair', 'Good', 'Very good', 'Excellent'];
+
+    function freshProfState() {
+      return { professors: [], reviews: [], owners: {}, profiles: {}, loaded: false, loading: false };
+    }
+    let profState = freshProfState();
+    let profObserver = null;
+    let currentProfId = null;
+    let rvRating = 0;
+
+    // ----- Auth hook -----
+    function onProfessorsAuth(user) {
+      if (profObserver) profObserver.disconnect();
+      profState = freshProfState();
+      currentProfId = null;
+      profGrid.textContent = '';
+      profEmpty.hidden = true;
+
+      if (!user) {
+        profGate.hidden = false;
+        profContent.hidden = true;
+        closeProfModal();
+        return;
+      }
+
+      profGate.hidden = true;
+      profContent.hidden = false;
+
+      // Load lazily: only when the section is near the viewport (saves Firestore reads)
+      if ('IntersectionObserver' in window) {
+        if (!profObserver) {
+          profObserver = new IntersectionObserver(function (entries) {
+            if (entries.some(function (e) { return e.isIntersecting; })) loadProfessors();
+          }, { rootMargin: '400px' });
+        }
+        profObserver.observe(profSection);
+      } else {
+        loadProfessors();
+      }
+    }
+
+    // ----- Loading -----
+    function loadProfilesMap() {
+      const build = function () {
+        profState.profiles = {};
+        (peopleCache || []).forEach(function (p) { profState.profiles[p.uid] = p; });
+      };
+      if (peopleCache) { build(); return Promise.resolve(); }
+      return db.collection('publicProfiles').limit(300).get().then(function (snap) {
+        peopleCache = snap.docs.map(function (d) {
+          return Object.assign({ uid: d.id }, d.data());
+        }).sort(function (a, b) { return fullName(a).localeCompare(fullName(b)); });
+        build();
+      }).catch(function () { build(); });
+    }
+
+    function loadProfessors(force) {
+      const user = auth.currentUser;
+      if (!user || profState.loading || (profState.loaded && !force)) return Promise.resolve();
+      const state = profState;
+      state.loading = true;
+      if (!state.loaded) profGrid.textContent = 'Loading professors…';
+
+      return Promise.all([
+        db.collection('professors').limit(300).get(),
+        db.collection('professorReviews').limit(2000).get(),
+        db.collection('reviewOwners').where('ownerUid', '==', user.uid).get(),
+        loadProfilesMap()
+      ]).then(function (res) {
+        if (state !== profState) return; // user logged out / switched while loading
+        state.professors = res[0].docs.map(function (d) { return Object.assign({ id: d.id }, d.data()); });
+        state.reviews = res[1].docs.map(function (d) { return Object.assign({ id: d.id }, d.data()); });
+        state.owners = {};
+        res[2].docs.forEach(function (d) {
+          const o = d.data();
+          state.owners[o.professorId] = { reviewId: o.reviewId, docId: d.id };
+        });
+
+        // Clean up owner links whose review was removed (e.g. by an admin) so the user can post again
+        if (state.reviews.length < 2000) {
+          const ids = {};
+          state.reviews.forEach(function (r) { ids[r.id] = true; });
+          Object.keys(state.owners).forEach(function (profId) {
+            if (!ids[state.owners[profId].reviewId]) {
+              db.collection('reviewOwners').doc(state.owners[profId].docId).delete().catch(function () {});
+              delete state.owners[profId];
+            }
+          });
+        }
+
+        state.loaded = true;
+        renderProfessors();
+        if (profModal.classList.contains('is-open') && !profViewDetail.hidden) renderProfDetail();
+      }).catch(function (err) {
+        console.error('Loading professors failed:', err.code, err.message);
+        if (state !== profState) return;
+        profGrid.textContent = err.code === 'permission-denied'
+          ? 'Permission denied: update your Firestore rules to allow professor ratings.'
+          : 'Could not load professors. Please try again.';
+      }).then(function () { state.loading = false; });
+    }
+
+    // ----- Helpers -----
+    function computeStats() {
+      const map = {};
+      profState.reviews.forEach(function (r) {
+        const m = map[r.professorId] || (map[r.professorId] = { n: 0, sum: 0 });
+        m.n += 1; m.sum += r.rating;
+      });
+      Object.keys(map).forEach(function (k) { map[k].avg = map[k].sum / map[k].n; });
+      return map;
+    }
+
+    function starsEl(avg) {
+      const wrap = document.createElement('span');
+      wrap.className = 'stars';
+      wrap.setAttribute('role', 'img');
+      wrap.setAttribute('aria-label', avg.toFixed(1) + ' out of 5 stars');
+      const bg = document.createElement('span');
+      bg.className = 'stars-bg';
+      bg.textContent = '★★★★★';
+      const fill = document.createElement('span');
+      fill.className = 'stars-fill';
+      fill.textContent = '★★★★★';
+      fill.style.width = Math.max(0, Math.min(100, (avg / 5) * 100)) + '%';
+      wrap.appendChild(bg);
+      wrap.appendChild(fill);
+      return wrap;
+    }
+
+    function profSlug(name) {
+      let t = name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+      t = t.replace(/^(dr|prof|pr|professor|professeur|mr|mme|mrs|ms)\.?\s+/, '');
+      t = t.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-+|-+$/g, '');
+      return t.slice(0, 100);
+    }
+
+    // ----- Professors grid -----
+    function renderProfessors() {
+      const stats = computeStats();
+      const q = profSearch.value.trim().toLowerCase();
+      const sort = profSort.value;
+
+      const list = profState.professors.filter(function (p) {
+        return !q || ((p.name || '') + ' ' + (p.department || '')).toLowerCase().indexOf(q) !== -1;
+      });
+      list.sort(function (a, b) {
+        const sa = stats[a.id] || { n: 0, avg: 0 };
+        const sb = stats[b.id] || { n: 0, avg: 0 };
+        if (sort === 'az') return (a.name || '').localeCompare(b.name || '');
+        if (sort === 'reviews') return sb.n - sa.n || (a.name || '').localeCompare(b.name || '');
+        return sb.avg - sa.avg || sb.n - sa.n || (a.name || '').localeCompare(b.name || '');
+      });
+
+      profGrid.textContent = '';
+      profEmpty.hidden = list.length > 0;
+
+      list.forEach(function (p) {
+        const st = stats[p.id] || { n: 0, avg: 0 };
+        const card = document.createElement('button');
+        card.type = 'button';
+        card.className = 'prof-card';
+
+        const top = document.createElement('div');
+        top.className = 'prof-card-top';
+        const av = document.createElement('div');
+        av.className = 'profile-avatar profile-avatar-small';
+        av.textContent = initialsFromName(p.name);
+        const nameBox = document.createElement('div');
+        nameBox.className = 'prof-card-name';
+        const nm = document.createElement('strong');
+        nm.textContent = p.name;
+        nameBox.appendChild(nm);
+        if (p.department) {
+          const dept = document.createElement('span');
+          dept.textContent = p.department;
+          nameBox.appendChild(dept);
+        }
+        top.appendChild(av);
+        top.appendChild(nameBox);
+
+        const rating = document.createElement('div');
+        rating.className = 'prof-card-rating';
+        rating.appendChild(starsEl(st.avg));
+        const txt = document.createElement('span');
+        txt.textContent = st.n
+          ? st.avg.toFixed(1) + ' · ' + st.n + (st.n === 1 ? ' review' : ' reviews')
+          : 'No reviews yet';
+        rating.appendChild(txt);
+
+        card.appendChild(top);
+        card.appendChild(rating);
+        card.addEventListener('click', function () { openProfessor(p.id); });
+        profGrid.appendChild(card);
+      });
+    }
+
+    // ----- Modal plumbing -----
+    function showProfView(name) {
+      profViewAdd.hidden = name !== 'add';
+      profViewDetail.hidden = name !== 'detail';
+      profModal.classList.add('is-open');
+    }
+    function closeProfModal() {
+      profModal.classList.remove('is-open');
+    }
+
+    // ----- Add professor -----
+    function openAddProfessor() {
+      if (!auth.currentUser) return openAuthModal('signin');
+      document.getElementById('pa-error').hidden = true;
+      document.getElementById('pa-name').value = profSearch.value.trim().slice(0, 60);
+      document.getElementById('pa-dept').value = '';
+      showProfView('add');
+      setTimeout(function () { document.getElementById('pa-name').focus(); }, 50);
+    }
+
+    document.getElementById('prof-add-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      const errEl = document.getElementById('pa-error');
+      const btn = document.getElementById('pa-save-btn');
+      errEl.hidden = true;
+
+      const name = document.getElementById('pa-name').value.replace(/\s+/g, ' ').trim();
+      const dept = document.getElementById('pa-dept').value.replace(/\s+/g, ' ').trim();
+      const slug = profSlug(name);
+      if (name.length < 3 || !slug) {
+        errEl.textContent = 'Please enter the professor\'s full name.';
+        errEl.hidden = false;
+        return;
+      }
+
+      // Already exists? Just open it.
+      if (profState.professors.some(function (p) { return p.id === slug; })) {
+        openProfessor(slug);
+        return;
+      }
+
+      btn.disabled = true;
+      db.collection('professors').doc(slug).set({
+        name: name,
+        nameLower: name.toLowerCase(),
+        department: dept,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      }).then(function () {
+        return loadProfessors(true);
+      }).then(function () {
+        openProfessor(slug);
+      }).catch(function (err) {
+        console.error('Adding professor failed:', err);
+        errEl.textContent = err.code === 'permission-denied'
+          ? 'Could not add this professor. They may already exist: try searching for the name.'
+          : 'Could not add the professor. Please try again.';
+        errEl.hidden = false;
+      }).then(function () { btn.disabled = false; });
+    });
+
+    // ----- Professor details -----
+    function myReviewFor(profId) {
+      const o = profState.owners[profId];
+      if (!o) return null;
+      return profState.reviews.filter(function (r) { return r.id === o.reviewId; })[0] || null;
+    }
+
+    function openProfessor(profId) {
+      const prof = profState.professors.filter(function (p) { return p.id === profId; })[0];
+      if (!prof) return;
+      currentProfId = profId;
+      const mine = myReviewFor(profId);
+      setRating(mine ? mine.rating : 0);
+      rvComment.value = mine ? mine.comment : '';
+      document.getElementById('rv-anon').checked = mine ? !!mine.anonymous : true;
+      document.getElementById('rv-error').hidden = true;
+      document.getElementById('rv-success').hidden = true;
+      renderProfDetail();
+      showProfView('detail');
+      document.querySelector('#prof-modal .auth-modal-box').scrollTop = 0;
+    }
+
+    function renderProfDetail() {
+      const prof = profState.professors.filter(function (p) { return p.id === currentProfId; })[0];
+      if (!prof) return;
+      const stats = computeStats()[prof.id] || { n: 0, avg: 0 };
+
+      document.getElementById('pd-name').textContent = prof.name;
+      const deptEl = document.getElementById('pd-dept');
+      deptEl.textContent = prof.department || '';
+      deptEl.hidden = !prof.department;
+      document.getElementById('pd-avg').textContent = stats.n ? stats.avg.toFixed(1) : '–';
+      const starsBox = document.getElementById('pd-stars');
+      starsBox.textContent = '';
+      starsBox.appendChild(starsEl(stats.avg));
+      document.getElementById('pd-count').textContent = stats.n
+        ? stats.n + (stats.n === 1 ? ' review' : ' reviews')
+        : 'No reviews yet';
+
+      const mine = myReviewFor(prof.id);
+      document.getElementById('rv-form-title').textContent = mine ? 'Your review' : 'Write a review';
+      document.getElementById('rv-submit-btn').textContent = mine ? 'Update review' : 'Post review';
+      document.getElementById('rv-delete-btn').hidden = !mine;
+      document.getElementById('rv-count').textContent = rvComment.value.length;
+
+      // Reviews list (newest first)
+      const list = document.getElementById('pd-reviews');
+      list.textContent = '';
+      const reviews = profState.reviews.filter(function (r) { return r.professorId === prof.id; })
+        .sort(function (a, b) { return tsMs(b.createdAt) - tsMs(a.createdAt); });
+
+      if (!reviews.length) {
+        const empty = document.createElement('p');
+        empty.className = 'people-empty';
+        empty.textContent = 'No reviews yet. Be the first to write one!';
+        list.appendChild(empty);
+        return;
+      }
+
+      reviews.forEach(function (r) {
+        const isMine = mine && mine.id === r.id;
+        const card = document.createElement('article');
+        card.className = 'review-card' + (isMine ? ' is-mine' : '');
+
+        const head = document.createElement('div');
+        head.className = 'review-head';
+        head.appendChild(starsEl(r.rating));
+        if (isMine) {
+          const badge = document.createElement('span');
+          badge.className = 'review-mine-badge';
+          badge.textContent = 'Your review';
+          head.appendChild(badge);
+        }
+
+        const text = document.createElement('p');
+        text.className = 'review-text';
+        text.textContent = r.comment;
+
+        const meta = document.createElement('div');
+        meta.className = 'review-meta';
+        const who = document.createElement('span');
+        if (r.anonymous || !r.authorId) {
+          who.textContent = 'Anonymous student';
+        } else {
+          const ap = profState.profiles[r.authorId];
+          who.textContent = ap ? fullName(ap) : 'Student';
+        }
+        const when = document.createElement('span');
+        when.textContent = '· ' + new Date(tsMs(r.createdAt)).toLocaleDateString([], { day: 'numeric', month: 'short', year: 'numeric' });
+        meta.appendChild(who);
+        meta.appendChild(when);
+
+        if (!isMine) {
+          const rep = document.createElement('button');
+          rep.type = 'button';
+          rep.className = 'review-report-btn';
+          rep.textContent = 'Report';
+          rep.addEventListener('click', function () { reportReview(r, rep); });
+          meta.appendChild(rep);
+        }
+
+        card.appendChild(head);
+        card.appendChild(text);
+        card.appendChild(meta);
+        list.appendChild(card);
+      });
+    }
+
+    // ----- Star input -----
+    function setRating(n) {
+      rvRating = n;
+      paintStars(n);
+    }
+    function paintStars(n) {
+      document.querySelectorAll('#rv-stars .star-btn').forEach(function (b, i) {
+        b.classList.toggle('is-on', i < n);
+      });
+      document.getElementById('rv-rating-label').textContent = RATING_WORDS[n] || RATING_WORDS[0];
+    }
+    (function buildStarInput() {
+      const box = document.getElementById('rv-stars');
+      for (let v = 1; v <= 5; v++) {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'star-btn';
+        b.textContent = '★';
+        b.setAttribute('aria-label', v + (v === 1 ? ' star' : ' stars'));
+        b.addEventListener('mouseenter', function () { paintStars(v); });
+        b.addEventListener('focus', function () { paintStars(v); });
+        b.addEventListener('click', function () { setRating(v); });
+        box.appendChild(b);
+      }
+      box.addEventListener('mouseleave', function () { paintStars(rvRating); });
+      box.addEventListener('focusout', function () { paintStars(rvRating); });
+    })();
+
+    rvComment.addEventListener('input', function () {
+      document.getElementById('rv-count').textContent = rvComment.value.length;
+    });
+
+    // ----- Post / update review -----
+    document.getElementById('review-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      const user = auth.currentUser;
+      if (!user || !currentProfId) return;
+      const errEl = document.getElementById('rv-error');
+      const okEl = document.getElementById('rv-success');
+      const btn = document.getElementById('rv-submit-btn');
+      errEl.hidden = true; okEl.hidden = true;
+
+      const comment = rvComment.value.trim();
+      if (!rvRating) {
+        errEl.textContent = 'Please choose a star rating.';
+        errEl.hidden = false;
+        return;
+      }
+      if (comment.length < 10) {
+        errEl.textContent = 'Please write at least 10 characters.';
+        errEl.hidden = false;
+        return;
+      }
+
+      const anon = document.getElementById('rv-anon').checked;
+      const profId = currentProfId;
+      const existing = myReviewFor(profId);
+
+      const data = {
+        professorId: profId,
+        rating: rvRating,
+        comment: comment.slice(0, 500),
+        anonymous: anon,
+        createdAt: existing ? existing.createdAt : firebase.firestore.FieldValue.serverTimestamp()
+      };
+      if (!anon) data.authorId = user.uid; // named reviews carry a verified author id; anonymous ones carry none
+
+      let op;
+      if (existing) {
+        op = db.collection('professorReviews').doc(existing.id).set(data);
+      } else {
+        const reviewRef = db.collection('professorReviews').doc();
+        const ownerRef = db.collection('reviewOwners').doc(profId + '_' + user.uid);
+        const batch = db.batch();
+        batch.set(ownerRef, { ownerUid: user.uid, professorId: profId, reviewId: reviewRef.id });
+        batch.set(reviewRef, data);
+        op = batch.commit();
+      }
+
+      btn.disabled = true;
+      op.then(function () {
+        return loadProfessors(true);
+      }).then(function () {
+        if (currentProfId === profId) {
+          renderProfDetail();
+          okEl.hidden = false;
+        }
+      }).catch(function (err) {
+        console.error('Saving review failed:', err);
+        errEl.textContent = err.code === 'permission-denied'
+          ? 'Could not save your review: permission denied (check your Firestore rules).'
+          : 'Could not save your review. Please try again.';
+        errEl.hidden = false;
+      }).then(function () { btn.disabled = false; });
+    });
+
+    document.getElementById('rv-delete-btn').addEventListener('click', function () {
+      const user = auth.currentUser;
+      const profId = currentProfId;
+      const mine = myReviewFor(profId);
+      if (!user || !mine) return;
+      if (!window.confirm('Delete your review? This cannot be undone.')) return;
+
+      const batch = db.batch();
+      batch.delete(db.collection('professorReviews').doc(mine.id));
+      batch.delete(db.collection('reviewOwners').doc(profState.owners[profId].docId));
+      batch.commit().then(function () {
+        setRating(0);
+        rvComment.value = '';
+        document.getElementById('rv-anon').checked = true;
+        document.getElementById('rv-success').hidden = true;
+        return loadProfessors(true);
+      }).catch(function (err) {
+        console.error('Deleting review failed:', err);
+        const errEl = document.getElementById('rv-error');
+        errEl.textContent = 'Could not delete your review. Please try again.';
+        errEl.hidden = false;
+      });
+    });
+
+    // ----- Report a review -----
+    function reportReview(r, btn) {
+      const user = auth.currentUser;
+      if (!user) return;
+      if (!window.confirm('Report this review as inappropriate?')) return;
+      btn.disabled = true;
+      db.collection('reviewReports').doc(r.id + '_' + user.uid).set({
+        reviewId: r.id,
+        professorId: r.professorId,
+        reporterUid: user.uid,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      }).then(function () {
+        btn.textContent = 'Reported ✓';
+      }).catch(function (err) {
+        console.error('Report failed:', err);
+        btn.textContent = err.code === 'permission-denied' ? 'Already reported' : 'Failed';
+      });
+    }
+
+    // ----- Wiring -----
+    profSearch.addEventListener('input', renderProfessors);
+    profSort.addEventListener('change', renderProfessors);
+    document.getElementById('prof-add-btn').addEventListener('click', openAddProfessor);
+    document.getElementById('prof-login-btn').addEventListener('click', function () { openAuthModal('signin'); });
+    document.querySelectorAll('[data-close-prof]').forEach(function (el) {
+      el.addEventListener('click', function (e) { e.preventDefault(); closeProfModal(); });
+    });
+    profModal.addEventListener('click', function (e) {
+      if (e.target === profModal) closeProfModal();
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && profModal.classList.contains('is-open')) closeProfModal();
     });
   </script>
 
