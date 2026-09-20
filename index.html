@@ -116,6 +116,8 @@
           <option value="S2">Semester 2</option>
           <option value="S3">Semester 3</option>
           <option value="S4">Semester 4</option>
+          <option value="S5">Semester 5</option>
+          <option value="S6">Semester 6</option>
           <option value="Master 1">Master 1</option>
           <option value="Master 2">Master 2</option>
           <option value="Other">Other</option>
@@ -148,6 +150,8 @@
           <option value="S2">Semester 2</option>
           <option value="S3">Semester 3</option>
           <option value="S4">Semester 4</option>
+          <option value="S5">Semester 5</option>
+          <option value="S6">Semester 6</option>
           <option value="Master 1">Master 1</option>
           <option value="Master 2">Master 2</option>
           <option value="Other">Other</option>
@@ -182,6 +186,9 @@
           </div>
         </div>
 
+        <h4 class="profile-section-title">Badges</h4>
+        <div id="pm-badges" class="badges-row"></div>
+
         <form id="people-profile-form" class="auth-form">
           <div class="auth-form-row">
             <div>
@@ -201,6 +208,8 @@
             <option value="S2">Semester 2</option>
             <option value="S3">Semester 3</option>
             <option value="S4">Semester 4</option>
+            <option value="S5">Semester 5</option>
+            <option value="S6">Semester 6</option>
             <option value="Master 1">Master 1</option>
             <option value="Master 2">Master 2</option>
             <option value="Other">Other</option>
@@ -220,10 +229,11 @@
       <!-- Students directory -->
       <div id="people-view-directory" hidden>
         <h3 class="profile-modal-title">Students</h3>
-        <p class="profile-modal-subtitle">Browse the FP Library community.</p>
+        <p class="profile-modal-subtitle">Search for a student by name to view their profile.</p>
 
         <input type="search" id="people-search" class="people-search" placeholder="Search by name or year…" autocomplete="off" />
 
+        <p id="people-search-prompt" class="people-empty">Start typing a name to find a student.</p>
         <div id="people-list" class="people-list" aria-live="polite"></div>
         <p id="people-empty" class="people-empty" hidden>No students found.</p>
       </div>
@@ -242,6 +252,9 @@
 
         <h4 class="profile-section-title">About</h4>
         <p id="pu-bio" class="profile-bio"></p>
+
+        <h4 class="profile-section-title">Badges</h4>
+        <div id="pu-badges" class="badges-row"></div>
 
         <button type="button" id="pu-message-btn" class="button primary-button auth-submit" hidden>Send a message</button>
         <button type="button" id="pu-edit-btn" class="button primary-button auth-submit" hidden>Edit my profile</button>
@@ -1510,6 +1523,7 @@
         backfillPublicProfile(user.uid);
         startInboxListener(user.uid);
         onProfessorsAuth(user);
+        loadMyBadges(user.uid);
 
         db.collection('users').doc(user.uid).get().then(function (doc) {
           if (doc.exists) {
@@ -1531,6 +1545,7 @@
         onProfessorsAuth(null);
         closePeopleModal();
         peopleCache = null;
+        myBadges = {};
       }
     });
 
@@ -1555,6 +1570,92 @@
     function randomAvatarSeed() {
       return Math.random().toString(36).slice(2) + Date.now().toString(36);
     }
+
+    // =====================================================
+    // ---- Badges: small, no-pressure recognitions for easy actions ----
+    // Stored at publicProfiles/{uid}.badges = { archive: true, reviewer: true }
+    // =====================================================
+    const BADGES = {
+      archive: { icon: '🧭', label: 'Explorer', desc: 'Checked out the Archive' },
+      reviewer: { icon: '📝', label: 'Reviewer', desc: 'Posted a professor review' }
+    };
+    let myBadges = {};
+
+    function loadMyBadges(uid) {
+      db.collection('publicProfiles').doc(uid).get().then(function (doc) {
+        myBadges = (doc.exists && doc.data().badges) || {};
+      }).catch(function () { myBadges = {}; });
+    }
+
+    function awardBadge(id) {
+      const user = auth.currentUser;
+      if (!user || !BADGES[id] || myBadges[id]) return;
+      myBadges[id] = true;
+
+      const field = {};
+      field['badges.' + id] = true;
+      db.collection('publicProfiles').doc(user.uid).update(field).catch(function () {
+        db.collection('publicProfiles').doc(user.uid).set({ badges: { [id]: true } }, { merge: true });
+      });
+
+      showBadgeToast(id);
+      if (typeof updateMyPreview === 'function' && !viewMe.hidden) renderMyBadges();
+    }
+
+    function showBadgeToast(id) {
+      const b = BADGES[id];
+      if (!b) return;
+      const toast = document.getElementById('badge-toast');
+      document.getElementById('badge-toast-icon').textContent = b.icon;
+      document.getElementById('badge-toast-text').textContent = 'Badge earned: ' + b.label + ' — ' + b.desc;
+      toast.classList.remove('is-visible');
+      void toast.offsetWidth; // restart animation if a toast is already showing
+      toast.classList.add('is-visible');
+      clearTimeout(showBadgeToast._t);
+      showBadgeToast._t = setTimeout(function () { toast.classList.remove('is-visible'); }, 4000);
+    }
+
+    function badgesRow(badgeMap, emptyText) {
+      const wrap = document.createElement('div');
+      wrap.className = 'badges-row';
+      const earned = Object.keys(BADGES).filter(function (id) { return badgeMap && badgeMap[id]; });
+      if (!earned.length) {
+        const p = document.createElement('span');
+        p.className = 'badges-empty';
+        p.textContent = emptyText;
+        wrap.appendChild(p);
+        return wrap;
+      }
+      earned.forEach(function (id) {
+        const b = BADGES[id];
+        const chip = document.createElement('span');
+        chip.className = 'badge-chip';
+        chip.title = b.desc;
+        chip.textContent = b.icon + ' ' + b.label;
+        wrap.appendChild(chip);
+      });
+      return wrap;
+    }
+
+    function renderMyBadges() {
+      const host = document.getElementById('pm-badges');
+      if (!host) return;
+      host.textContent = '';
+      host.appendChild(badgesRow(myBadges, 'No badges yet — explore the Archive or post a professor review to earn your first one!'));
+    }
+
+    // Award the "Explorer" badge the first time someone actually scrolls to the Archive
+    (function () {
+      const archiveSection = document.getElementById('archive');
+      if (!archiveSection || !('IntersectionObserver' in window)) return;
+      const obs = new IntersectionObserver(function (entries) {
+        if (entries.some(function (e) { return e.isIntersecting; })) {
+          awardBadge('archive');
+          obs.disconnect();
+        }
+      }, { threshold: 0.4 });
+      obs.observe(archiveSection);
+    })();
 
     function savePublicProfile(uid, fields) {
       const data = Object.assign({}, fields, {
@@ -1723,6 +1824,7 @@
       document.getElementById('pm-preview-year').textContent = y;
       document.getElementById('pm-preview-year').hidden = !y;
       document.getElementById('pm-bio-count').textContent = pmBio.value.length;
+      renderMyBadges();
     }
 
     function openMyProfile() {
@@ -1744,6 +1846,7 @@
         document.getElementById('pm-year').value = pub.year || priv.year || '';
         pmBio.value = pub.bio || '';
         myAvatarSeed = pub.avatarSeed || user.uid;
+        myBadges = pub.badges || myBadges || {};
         updateMyPreview();
       }).catch(function (err) {
         console.error('Could not load profile:', err);
@@ -1808,9 +1911,17 @@
     function renderPeople() {
       const q = peopleSearch.value.trim().toLowerCase();
       peopleList.textContent = '';
+      const searchPrompt = document.getElementById('people-search-prompt');
+
+      if (!q) {
+        searchPrompt.hidden = false;
+        peopleEmpty.hidden = true;
+        return;
+      }
+      searchPrompt.hidden = true;
+
       const me = auth.currentUser ? auth.currentUser.uid : null;
       const shown = (peopleCache || []).filter(function (p) {
-        if (!q) return true;
         return (fullName(p) + ' ' + (p.year || '')).toLowerCase().indexOf(q) !== -1;
       });
       peopleEmpty.hidden = shown.length > 0;
@@ -1885,6 +1996,9 @@
       const bioEl = document.getElementById('pu-bio');
       bioEl.textContent = p.bio || 'This student hasn\'t written a bio yet.';
       bioEl.classList.toggle('is-empty', !p.bio);
+      const badgesHost = document.getElementById('pu-badges');
+      badgesHost.textContent = '';
+      badgesHost.appendChild(badgesRow(p.badges, 'No badges yet.'));
       const isMe = !!(auth.currentUser && auth.currentUser.uid === p.uid);
       viewedProfile = p;
       document.getElementById('pu-edit-btn').hidden = !isMe;
@@ -2785,6 +2899,7 @@
           renderProfDetail();
           okEl.hidden = false;
         }
+        awardBadge('reviewer');
       }).catch(function (err) {
         console.error('Saving review failed:', err);
         errEl.textContent = err.code === 'permission-denied'
@@ -2852,6 +2967,11 @@
       if (e.key === 'Escape' && profModal.classList.contains('is-open')) closeProfModal();
     });
   </script>
+
+  <div id="badge-toast" class="badge-toast" role="status" aria-live="polite">
+    <span id="badge-toast-icon" class="badge-toast-icon">🏅</span>
+    <span id="badge-toast-text">Badge earned</span>
+  </div>
 
 </body>
 </html>
