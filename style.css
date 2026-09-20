@@ -740,6 +740,68 @@ h4 {
   letter-spacing: 1px;
 }
 
+.tronc-commun {
+  margin-bottom: 75px;
+}
+
+.tronc-commun-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 18px 22px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--card);
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.tronc-commun-summary::-webkit-details-marker {
+  display: none;
+}
+
+.tronc-commun-summary:hover {
+  border-color: var(--accent);
+}
+
+.tronc-commun-summary > div {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.tronc-commun-summary h3 {
+  display: inline;
+}
+
+.tronc-commun-sub {
+  color: var(--muted);
+  font-weight: 400;
+  font-size: 0.8em;
+}
+
+.tronc-commun-chevron {
+  flex: none;
+  color: var(--muted);
+  font-size: 1.2rem;
+  transition: transform 0.2s ease;
+}
+
+.tronc-commun[open] .tronc-commun-chevron {
+  transform: rotate(180deg);
+}
+
+.tronc-commun-body {
+  padding-top: 34px;
+}
+
+.tronc-commun-body .semester-block:last-child {
+  margin-bottom: 0;
+}
+
 .module-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
