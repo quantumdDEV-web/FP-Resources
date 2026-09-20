@@ -1577,9 +1577,42 @@
     // =====================================================
     const BADGES = {
       archive: { icon: '🧭', label: 'Explorer', desc: 'Checked out the Archive' },
-      reviewer: { icon: '📝', label: 'Reviewer', desc: 'Posted a professor review' }
+      reviewer: { icon: '📝', label: 'Reviewer', desc: 'Posted a professor review' },
+      socializer: { icon: '💬', label: 'Socializer', desc: 'Sent a message to another student' }
     };
     let myBadges = {};
+
+    // Unlock/create the shared AudioContext on the user's first interaction with the page,
+    // since browsers block audio from playing before any user gesture has happened.
+    let badgeAudioCtx = null;
+    function unlockBadgeAudio() {
+      if (!badgeAudioCtx) {
+        try { badgeAudioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { badgeAudioCtx = null; }
+      } else if (badgeAudioCtx.state === 'suspended') {
+        badgeAudioCtx.resume().catch(function () {});
+      }
+    }
+    ['pointerdown', 'keydown', 'touchstart', 'scroll'].forEach(function (evt) {
+      document.addEventListener(evt, unlockBadgeAudio, { once: true, passive: true });
+    });
+
+    function playBadgeSound() {
+      if (!badgeAudioCtx) return;
+      const now = badgeAudioCtx.currentTime;
+      [660, 990].forEach(function (freq, i) {
+        const osc = badgeAudioCtx.createOscillator();
+        const gain = badgeAudioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        const t = now + i * 0.11;
+        gain.gain.setValueAtTime(0, t);
+        gain.gain.linearRampToValueAtTime(0.18, t + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.3);
+        osc.connect(gain).connect(badgeAudioCtx.destination);
+        osc.start(t);
+        osc.stop(t + 0.32);
+      });
+    }
 
     function loadMyBadges(uid) {
       db.collection('publicProfiles').doc(uid).get().then(function (doc) {
@@ -1605,6 +1638,7 @@
     function showBadgeToast(id) {
       const b = BADGES[id];
       if (!b) return;
+      playBadgeSound();
       const toast = document.getElementById('badge-toast');
       document.getElementById('badge-toast-icon').textContent = b.icon;
       document.getElementById('badge-toast-text').textContent = 'Badge earned: ' + b.label + ' — ' + b.desc;
@@ -2293,6 +2327,7 @@
         chatInput.value = '';
         chatInput.style.height = 'auto';
         chatInput.focus();
+        awardBadge('socializer');
       }).catch(function (err) {
         console.error('Send failed:', err);
         chatError.textContent = err.code === 'permission-denied'
