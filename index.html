@@ -3106,26 +3106,44 @@
       document.querySelector('#prof-modal .auth-modal-box').scrollTop = 0;
     }
 
-    function toggleReviewLike(review) {
+    const REACTION_TYPES = [
+      { key: 'like', emoji: '👍' },
+      { key: 'laugh', emoji: '😂' },
+      { key: 'angry', emoji: '😠' }
+    ];
+
+    function toggleReaction(review, reactionKey) {
       const user = auth.currentUser;
       if (!user) { openAuthModal('signin'); return; }
 
-      const likedBy = review.likedBy || [];
-      const alreadyLiked = likedBy.indexOf(user.uid) !== -1;
+      if (!review.reactions) review.reactions = {};
+      // Fold any legacy likedBy data in once, so old reviews behave consistently
+      (review.likedBy || []).forEach(function (uid) { if (!review.reactions[uid]) review.reactions[uid] = 'like'; });
+
+      const previous = review.reactions[user.uid] || null;
+      const turningOff = previous === reactionKey;
 
       // Optimistic local update so the UI feels instant
-      review.likedBy = alreadyLiked
-        ? likedBy.filter(function (id) { return id !== user.uid; })
-        : likedBy.concat([user.uid]);
+      if (turningOff) {
+        delete review.reactions[user.uid];
+      } else {
+        review.reactions[user.uid] = reactionKey;
+      }
       renderProfDetail();
 
-      db.collection('professorReviews').doc(review.id).update({
-        likedBy: alreadyLiked
-          ? firebase.firestore.FieldValue.arrayRemove(user.uid)
-          : firebase.firestore.FieldValue.arrayUnion(user.uid)
-      }).catch(function () {
+      const update = {};
+      update['reactions.' + user.uid] = turningOff ? firebase.firestore.FieldValue.delete() : reactionKey;
+
+      db.collection('professorReviews').doc(review.id).update(update).catch(function (err) {
+        console.error('Reaction failed:', err.code, err.message);
         // Revert on failure
-        review.likedBy = likedBy;
+        if (turningOff) {
+          review.reactions[user.uid] = previous;
+        } else if (previous) {
+          review.reactions[user.uid] = previous;
+        } else {
+          delete review.reactions[user.uid];
+        }
         renderProfDetail();
       });
     }
@@ -3220,16 +3238,24 @@
         when.textContent = new Date(tsMs(r.createdAt)).toLocaleDateString([], { day: 'numeric', month: 'short', year: 'numeric' });
         meta.appendChild(when);
 
-        const likeBtn = document.createElement('button');
-        likeBtn.type = 'button';
-        likeBtn.className = 'review-like-btn';
-        const likedBy = r.likedBy || [];
+        const reactionBar = document.createElement('div');
+        reactionBar.className = 'reaction-bar';
+        const reactions = r.reactions || {};
+        // Backward-compat: fold in any legacy likedBy array as implicit 'like' reactions
+        (r.likedBy || []).forEach(function (uid) { if (!reactions[uid]) reactions[uid] = 'like'; });
         const myUid = auth.currentUser ? auth.currentUser.uid : null;
-        const iLiked = myUid && likedBy.indexOf(myUid) !== -1;
-        likeBtn.classList.toggle('is-liked', !!iLiked);
-        likeBtn.innerHTML = (iLiked ? '❤️' : '🤍') + ' <span>' + likedBy.length + '</span>';
-        likeBtn.addEventListener('click', function () { toggleReviewLike(r); });
-        meta.appendChild(likeBtn);
+        const myReaction = myUid ? reactions[myUid] : null;
+
+        REACTION_TYPES.forEach(function (rt) {
+          const count = Object.values(reactions).filter(function (v) { return v === rt.key; }).length;
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'review-reaction-btn' + (myReaction === rt.key ? ' is-selected reaction-' + rt.key : '');
+          btn.innerHTML = rt.emoji + ' <span>' + count + '</span>';
+          btn.addEventListener('click', function () { toggleReaction(r, rt.key); });
+          reactionBar.appendChild(btn);
+        });
+        meta.appendChild(reactionBar);
 
         if (!isMine) {
           const rep = document.createElement('button');
