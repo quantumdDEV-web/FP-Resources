@@ -91,6 +91,29 @@
       </form>
 
       <form id="auth-form-signup" class="auth-form" hidden>
+        <div class="auth-form-row">
+          <div>
+            <label for="signup-firstname">First Name</label>
+            <input type="text" id="signup-firstname" required placeholder="e.g. Zakaria" />
+          </div>
+          <div>
+            <label for="signup-lastname">Last Name</label>
+            <input type="text" id="signup-lastname" required placeholder="e.g. Belkhair" />
+          </div>
+        </div>
+
+        <label for="signup-year">Year of Study</label>
+        <select id="signup-year" required>
+          <option value="" disabled selected>Select your year</option>
+          <option value="S1">Semester 1</option>
+          <option value="S2">Semester 2</option>
+          <option value="S3">Semester 3</option>
+          <option value="S4">Semester 4</option>
+          <option value="Master 1">Master 1</option>
+          <option value="Master 2">Master 2</option>
+          <option value="Other">Other</option>
+        </select>
+
         <label for="signup-email">Email</label>
         <input type="email" id="signup-email" required placeholder="you@example.com" />
 
@@ -104,12 +127,43 @@
     </div>
   </div>
 
+  <!-- Complete Profile Modal (shown once for Google sign-ins missing a year of study) -->
+  <div id="profile-modal" class="auth-modal">
+    <div class="auth-modal-backdrop"></div>
+    <div class="auth-modal-box">
+      <h3 class="profile-modal-title">Just one more thing</h3>
+      <p class="profile-modal-subtitle">What year are you in? This helps us say hi properly.</p>
+
+      <form id="profile-form" class="auth-form">
+        <select id="profile-year" required>
+          <option value="" disabled selected>Select your year</option>
+          <option value="S1">Semester 1</option>
+          <option value="S2">Semester 2</option>
+          <option value="S3">Semester 3</option>
+          <option value="S4">Semester 4</option>
+          <option value="Master 1">Master 1</option>
+          <option value="Master 2">Master 2</option>
+          <option value="Other">Other</option>
+        </select>
+
+        <button type="submit" class="button primary-button auth-submit">Save</button>
+        <button type="button" id="profile-skip-btn" class="profile-skip-btn">Skip for now</button>
+      </form>
+    </div>
+  </div>
+
 
   <!-- Hero Section -->
   <main>
 
     <section id="home" class="hero">
       <div class="hero-content">
+
+  <div id="welcome-banner" class="welcome-banner" hidden>
+    <span class="welcome-emoji">👋</span>
+    <p>Hey <strong id="welcome-name">there</strong>! Welcome to our open library.</p>
+  </div>
+
 <span class="section-label">
   INDEPENDENT STUDENT RESOURCE LIBRARY
 </span>
@@ -117,6 +171,7 @@
   Physics resources,
   <span class="gradient-text">organized for students.</span>
 </h1>
+
 
         <p>
   An independent academic library created by students at Faculté
@@ -1068,7 +1123,10 @@
       errorEl.hidden = true;
 
       auth.signInWithPopup(provider)
-        .then(function () { closeAuthModal(); })
+        .then(function (result) {
+          closeAuthModal();
+          return ensureUserProfile(result.user);
+        })
         .catch(function (err) {
           console.error('Google sign-in failed:', err.code, err.message);
           let message = err.message;
@@ -1101,12 +1159,26 @@
 
     document.getElementById('auth-form-signup').addEventListener('submit', function (e) {
       e.preventDefault();
+      const firstName = document.getElementById('signup-firstname').value.trim();
+      const lastName = document.getElementById('signup-lastname').value.trim();
+      const year = document.getElementById('signup-year').value;
       const email = document.getElementById('signup-email').value;
       const password = document.getElementById('signup-password').value;
       const errorEl = document.getElementById('signup-error');
       errorEl.hidden = true;
 
       auth.createUserWithEmailAndPassword(email, password)
+        .then(function (cred) {
+          return Promise.all([
+            cred.user.updateProfile({ displayName: firstName + ' ' + lastName }),
+            db.collection('users').doc(cred.user.uid).set({
+              firstName: firstName,
+              lastName: lastName,
+              year: year,
+              email: email
+            })
+          ]);
+        })
         .then(function () { closeAuthModal(); })
         .catch(function (err) {
           errorEl.textContent = err.message;
@@ -1118,6 +1190,64 @@
       auth.signOut();
     });
 
+    // ---- User profile (name + year of study) ----
+    const profileModal = document.getElementById('profile-modal');
+    const welcomeBanner = document.getElementById('welcome-banner');
+    const welcomeNameEl = document.getElementById('welcome-name');
+    let profileModalUid = null;
+
+    function ensureUserProfile(user) {
+      const ref = db.collection('users').doc(user.uid);
+      return ref.get().then(function (doc) {
+        if (doc.exists) return doc.data();
+
+        // First time we've seen this user (Google sign-in) — create a starter profile
+        const nameParts = (user.displayName || '').trim().split(' ');
+        const firstName = nameParts[0] || 'there';
+        const lastName = nameParts.slice(1).join(' ');
+
+        return ref.set({
+          firstName: firstName,
+          lastName: lastName,
+          year: null,
+          email: user.email
+        }).then(function () {
+          return { firstName: firstName, lastName: lastName, year: null, email: user.email };
+        });
+      }).then(function (data) {
+        if (!data.year) {
+          profileModalUid = user.uid;
+          profileModal.classList.add('is-open');
+        }
+        return data;
+      });
+    }
+
+    document.getElementById('profile-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      if (!profileModalUid) return;
+      const year = document.getElementById('profile-year').value;
+
+      db.collection('users').doc(profileModalUid).set({ year: year }, { merge: true })
+        .then(function () {
+          profileModal.classList.remove('is-open');
+          profileModalUid = null;
+        });
+    });
+
+    document.getElementById('profile-skip-btn').addEventListener('click', function () {
+      profileModal.classList.remove('is-open');
+      profileModalUid = null;
+    });
+
+    function showWelcomeBanner(firstName) {
+      welcomeNameEl.textContent = firstName || 'there';
+      welcomeBanner.hidden = false;
+    }
+    function hideWelcomeBanner() {
+      welcomeBanner.hidden = true;
+    }
+
     auth.onAuthStateChanged(function (user) {
       if (user) {
         loginBtn.hidden = true;
@@ -1126,6 +1256,14 @@
         favLoginHint.hidden = true;
         favCheckbox.disabled = false;
         window.loadUserFavorites(user.uid);
+
+        db.collection('users').doc(user.uid).get().then(function (doc) {
+          if (doc.exists) {
+            showWelcomeBanner(doc.data().firstName);
+          } else {
+            showWelcomeBanner(user.displayName ? user.displayName.split(' ')[0] : null);
+          }
+        });
       } else {
         loginBtn.hidden = false;
         userBadge.hidden = true;
@@ -1134,6 +1272,7 @@
         favLoginHint.hidden = false;
         window.clearUserFavorites();
         window.applyModuleFilters();
+        hideWelcomeBanner();
       }
     });
   </script>
