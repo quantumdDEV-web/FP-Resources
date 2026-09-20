@@ -417,6 +417,24 @@
 
         </div>
 
+        <!-- Site-wide stats: reads stats/site, hidden until the numbers load -->
+        <div id="site-stats" class="site-stats" hidden>
+          <div class="site-stat">
+            <span class="site-stat-num" id="stat-students">0</span>
+            <span class="site-stat-label" data-i18n="stats.students">students</span>
+          </div>
+          <span class="site-stat-sep" aria-hidden="true">·</span>
+          <div class="site-stat">
+            <span class="site-stat-num" id="stat-documents">0</span>
+            <span class="site-stat-label" data-i18n="stats.documents">documents</span>
+          </div>
+          <span class="site-stat-sep" aria-hidden="true">·</span>
+          <div class="site-stat">
+            <span class="site-stat-num" id="stat-professors">0</span>
+            <span class="site-stat-label" data-i18n="stats.professors">professors reviewed</span>
+          </div>
+        </div>
+
       </div>
 
     <div class="physics-visual" aria-hidden="true">
@@ -1313,6 +1331,7 @@
             );
             card.classList.add('is-favorited');
             star.textContent = '★';
+            if (typeof awardBadge === 'function') awardBadge('favorite');
           }
 
           if (document.getElementById('favorites-only-checkbox').checked) {
@@ -1457,7 +1476,12 @@
               year: year,
               email: email
             }),
-            savePublicProfile(cred.user.uid, { firstName: firstName, lastName: lastName, year: year })
+            savePublicProfile(cred.user.uid, { firstName: firstName, lastName: lastName, year: year }),
+            // Banner counter. Non-critical, so a failure here must not block signup.
+            db.collection('stats').doc('site').update({
+              students: firebase.firestore.FieldValue.increment(1),
+              updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            }).catch(function () {})
           ]);
         })
         .then(function () { closeAuthModal(); })
@@ -1547,6 +1571,7 @@
         startInboxListener(user.uid);
         onProfessorsAuth(user);
         loadMyBadges(user.uid);
+        trackLoginStreak(user.uid);
 
         db.collection('users').doc(user.uid).get().then(function (doc) {
           if (doc.exists) {
@@ -1600,8 +1625,11 @@
     // =====================================================
     const BADGES = {
       archive: { icon: '🧭', label: 'Explorer', desc: 'Checked out the Archive' },
+      favorite: { icon: '⭐', label: 'Collector', desc: 'Saved your first favorite module' },
       reviewer: { icon: '📝', label: 'Reviewer', desc: 'Posted a professor review' },
-      socializer: { icon: '💬', label: 'Socializer', desc: 'Sent a message to another student' }
+      socializer: { icon: '💬', label: 'Socializer', desc: 'Sent a message to another student' },
+      streak: { icon: '🎓', label: 'Regular', desc: 'Visited three days in a row' },
+      contributor: { icon: '📤', label: 'Contributor', desc: 'Shared a document with the library' }
     };
     let myBadges = {};
 
@@ -1637,13 +1665,24 @@
       });
     }
 
+    // Resolves once the current user's earned badges are known. Awards wait on this,
+    // otherwise a fast trigger (scrolling straight to the Archive, or the streak check)
+    // can fire before the fetch lands and re-show a toast for a badge already earned.
+    let badgesReady = Promise.resolve();
+
     function loadMyBadges(uid) {
-      db.collection('publicProfiles').doc(uid).get().then(function (doc) {
+      badgesReady = db.collection('publicProfiles').doc(uid).get().then(function (doc) {
         myBadges = (doc.exists && doc.data().badges) || {};
       }).catch(function () { myBadges = {}; });
+      return badgesReady;
     }
 
     function awardBadge(id) {
+      if (!BADGES[id]) return;
+      badgesReady.then(function () { grantBadge(id); });
+    }
+
+    function grantBadge(id) {
       const user = auth.currentUser;
       if (!user || !BADGES[id] || myBadges[id]) return;
       myBadges[id] = true;
@@ -1658,10 +1697,92 @@
       if (typeof updateMyPreview === 'function' && !viewMe.hidden) renderMyBadges();
     }
 
+    // ---- Confetti burst on badge unlock ----
+    // Deliberately short and self-cancelling: the canvas only exists while particles
+    // are on screen, so there is no permanent rAF loop running behind the page.
+    let confettiRaf = null;
+
+    function burstConfetti() {
+      if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+      const canvas = document.getElementById('badge-confetti');
+      if (!canvas || !canvas.getContext) return;
+
+      // Two badges can land together; cancel any in-flight loop so they don't
+      // clear each other's frames.
+      if (confettiRaf) cancelAnimationFrame(confettiRaf);
+
+      const ctx = canvas.getContext('2d');
+      const dpr = window.devicePixelRatio || 1;
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      canvas.style.width = w + 'px';
+      canvas.style.height = h + 'px';
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      canvas.classList.add('is-active');
+
+      const colors = ['#66d9ff', '#8b7cff', '#49f2c2', '#ffcf5c', '#ff7ab8'];
+      const originX = w / 2;
+      const originY = 70; // just under the toast
+      const parts = [];
+
+      for (let i = 0; i < 70; i++) {
+        const angle = (Math.PI * 2 * i) / 70 + Math.random() * 0.3;
+        const speed = 3 + Math.random() * 5;
+        parts.push({
+          x: originX,
+          y: originY,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed - 3,
+          size: 4 + Math.random() * 5,
+          color: colors[(Math.random() * colors.length) | 0],
+          rot: Math.random() * Math.PI,
+          vr: (Math.random() - 0.5) * 0.3,
+          life: 1
+        });
+      }
+
+      function frame() {
+        ctx.clearRect(0, 0, w, h);
+        let alive = 0;
+
+        parts.forEach(function (p) {
+          if (p.life <= 0) return;
+          alive++;
+          p.vy += 0.16;          // gravity
+          p.vx *= 0.99;          // drag
+          p.x += p.vx;
+          p.y += p.vy;
+          p.rot += p.vr;
+          p.life -= 0.012;
+
+          ctx.save();
+          ctx.globalAlpha = Math.max(p.life, 0);
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.rot);
+          ctx.fillStyle = p.color;
+          ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6);
+          ctx.restore();
+        });
+
+        if (alive > 0) {
+          confettiRaf = requestAnimationFrame(frame);
+        } else {
+          confettiRaf = null;
+          ctx.clearRect(0, 0, w, h);
+          canvas.classList.remove('is-active');
+        }
+      }
+      frame();
+    }
+
     function showBadgeToast(id) {
       const b = BADGES[id];
       if (!b) return;
       playBadgeSound();
+      burstConfetti();
       const toast = document.getElementById('badge-toast');
       document.getElementById('badge-toast-icon').textContent = b.icon;
       document.getElementById('badge-toast-text').textContent = 'Badge earned: ' + b.label + ' — ' + b.desc;
@@ -1712,6 +1833,113 @@
         }
       }, { threshold: 0.4 });
       obs.observe(archiveSection);
+    })();
+
+    // =====================================================
+    // ---- Login streak -> 🎓 Regular badge (3 days in a row) ----
+    // Days are stored as plain 'YYYY-MM-DD' strings rather than timestamps, because
+    // comparing *calendar days* across timezones with timestamps is a reliable way
+    // to produce off-by-one bugs.
+    // =====================================================
+    function dayKey(d) {
+      return d.getFullYear()
+        + '-' + String(d.getMonth() + 1).padStart(2, '0')
+        + '-' + String(d.getDate()).padStart(2, '0');
+    }
+
+    function trackLoginStreak(uid) {
+      const today = dayKey(new Date());
+      const y = new Date();
+      y.setDate(y.getDate() - 1);
+      const yesterday = dayKey(y);
+
+      const ref = db.collection('users').doc(uid);
+      ref.get().then(function (doc) {
+        const prev = (doc.exists && doc.data().streak) || null;
+
+        if (prev && prev.lastDay === today) {
+          // Already counted today — but the badge may still be pending from an
+          // earlier session that failed to write, so re-check it.
+          if ((prev.count || 0) >= 3) awardBadge('streak');
+          return;
+        }
+
+        let count;
+        if (prev && prev.lastDay === yesterday) {
+          count = (prev.count || 0) + 1;   // consecutive day
+        } else {
+          count = 1;                        // first visit, or the chain broke
+        }
+
+        return ref.set({ streak: { count: count, lastDay: today } }, { merge: true })
+          .then(function () {
+            if (count >= 3) awardBadge('streak');
+          });
+      }).catch(function (err) {
+        console.error('Streak update failed:', err);
+      });
+    }
+
+    // =====================================================
+    // ---- Contribution claims -> 📤 Contributor badge ----
+    // Uploads go through a Google Form, so the site never learns who submitted.
+    // Clicking an upload link files a *pending* claim; an admin approves it and
+    // sets the badge. Deliberately not self-awarding, or the badge means nothing.
+    // The doc ID is {uid}_{day} so repeat clicks on the same day collapse into one
+    // claim (the second write is rejected by rules and swallowed here).
+    // =====================================================
+    function claimContribution() {
+      const user = auth.currentUser;
+      if (!user) return;
+      const id = user.uid + '_' + dayKey(new Date());
+      db.collection('contributions').doc(id).set({
+        uid: user.uid,
+        note: 'Clicked through to the upload form',
+        status: 'pending',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      }).catch(function () { /* already claimed today, or offline — nothing to do */ });
+    }
+
+    document.querySelectorAll('a[href*="forms.gle"]').forEach(function (link) {
+      link.addEventListener('click', claimContribution);
+    });
+
+    // =====================================================
+    // ---- Site-wide stats banner (stats/site, public read) ----
+    // =====================================================
+    (function loadSiteStats() {
+      const host = document.getElementById('site-stats');
+      if (!host) return;
+
+      function countUp(el, target) {
+        if (!el) return;
+        const reduce = window.matchMedia
+          && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (reduce || target <= 0) {
+          el.textContent = target.toLocaleString();
+          return;
+        }
+        const duration = 900;
+        const start = performance.now();
+        function step(now) {
+          const t = Math.min((now - start) / duration, 1);
+          const eased = 1 - Math.pow(1 - t, 3);
+          el.textContent = Math.round(target * eased).toLocaleString();
+          if (t < 1) requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+      }
+
+      db.collection('stats').doc('site').get().then(function (doc) {
+        if (!doc.exists) return;       // nothing seeded yet: leave the banner hidden
+        const d = doc.data();
+        host.hidden = false;
+        countUp(document.getElementById('stat-students'), d.students || 0);
+        countUp(document.getElementById('stat-documents'), d.documents || 0);
+        countUp(document.getElementById('stat-professors'), d.professorsReviewed || 0);
+      }).catch(function (err) {
+        console.error('Stats load failed:', err);   // banner simply stays hidden
+      });
     })();
 
     function savePublicProfile(uid, fields) {
@@ -3030,6 +3258,9 @@
     <span id="badge-toast-icon" class="badge-toast-icon">🏅</span>
     <span id="badge-toast-text">Badge earned</span>
   </div>
+
+  <!-- Confetti burst layer for badge unlocks (purely decorative) -->
+  <canvas id="badge-confetti" class="badge-confetti" aria-hidden="true"></canvas>
 
 </body>
 </html>
