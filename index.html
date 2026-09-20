@@ -56,7 +56,7 @@
   </header>
 
   <!-- Auth Modal -->
-  <div id="auth-modal" class="auth-modal" hidden>
+  <div id="auth-modal" class="auth-modal">
     <div class="auth-modal-backdrop" data-close-modal></div>
     <div class="auth-modal-box">
       <button class="auth-modal-close" data-close-modal aria-label="Close">×</button>
@@ -1023,13 +1023,11 @@
     const favCheckbox = document.getElementById('favorites-only-checkbox');
 
     function openAuthModal(tab) {
-      authModal.hidden = false;
-      authModal.removeAttribute('hidden');
+      authModal.classList.add('is-open');
       setAuthTab(tab || 'signin');
     }
     function closeAuthModal() {
-      authModal.hidden = true;
-      authModal.setAttribute('hidden', '');
+      authModal.classList.remove('is-open');
       document.getElementById('signin-error').hidden = true;
       document.getElementById('signup-error').hidden = true;
     }
@@ -1051,7 +1049,7 @@
       });
     });
     document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape' && !authModal.hidden) closeAuthModal();
+      if (e.key === 'Escape' && authModal.classList.contains('is-open')) closeAuthModal();
     });
     document.getElementById('auth-modal').addEventListener('click', function (e) {
       // Clicking the dark overlay area (not the box itself) also closes it
@@ -1064,12 +1062,24 @@
 
     // ---- Google sign-in ----
     document.getElementById('google-signin-btn').addEventListener('click', function () {
+      setAuthTab('signin'); // ensures the error box (inside this form) is visible if something goes wrong
       const provider = new firebase.auth.GoogleAuthProvider();
+      const errorEl = document.getElementById('signin-error');
+      errorEl.hidden = true;
+
       auth.signInWithPopup(provider)
         .then(function () { closeAuthModal(); })
         .catch(function (err) {
-          const errorEl = document.getElementById('signin-error');
-          errorEl.textContent = err.message;
+          console.error('Google sign-in failed:', err.code, err.message);
+          let message = err.message;
+          if (err.code === 'auth/popup-blocked') {
+            message = 'Your browser blocked the Google sign-in popup. Please allow popups for this site and try again.';
+          } else if (err.code === 'auth/unauthorized-domain') {
+            message = 'This website\'s domain is not yet authorized for Google sign-in. Contact the site admin.';
+          } else if (err.code === 'auth/cancelled-popup-request' || err.code === 'auth/popup-closed-by-user') {
+            return; // user closed the popup themselves, no need to show an error
+          }
+          errorEl.textContent = message;
           errorEl.hidden = false;
         });
     });
