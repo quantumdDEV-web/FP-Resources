@@ -49,6 +49,7 @@
 
   <div id="nav-user-badge" class="nav-user-badge" hidden>
     <button id="nav-students-btn" class="nav-logout-btn">Students</button>
+    <button id="nav-messages-btn" class="nav-logout-btn">Messages<span id="nav-messages-badge" class="nav-badge" hidden>0</span></button>
     <button id="nav-profile-btn" class="nav-logout-btn">My Profile</button>
     <span id="nav-user-email"></span>
     <button id="nav-logout-btn" class="nav-logout-btn">Log Out</button>
@@ -235,7 +236,34 @@
         <h4 class="profile-section-title">About</h4>
         <p id="pu-bio" class="profile-bio"></p>
 
+        <button type="button" id="pu-message-btn" class="button primary-button auth-submit" hidden>Send a message</button>
         <button type="button" id="pu-edit-btn" class="button primary-button auth-submit" hidden>Edit my profile</button>
+      </div>
+
+      <!-- Inbox: list of conversations -->
+      <div id="people-view-inbox" hidden>
+        <h3 class="profile-modal-title">Messages</h3>
+        <p class="profile-modal-subtitle">Your conversations with other students.</p>
+        <div id="inbox-list" class="people-list" aria-live="polite"></div>
+        <p id="inbox-empty" class="people-empty" hidden>No conversations yet. Open a student's profile and tap “Send a message”.</p>
+        <button type="button" id="inbox-browse-btn" class="button primary-button auth-submit">Browse students</button>
+      </div>
+
+      <!-- Chat with one student -->
+      <div id="people-view-chat" hidden>
+        <div class="chat-header">
+          <button type="button" id="chat-back-btn" class="people-back-btn">← Messages</button>
+          <div class="chat-header-user">
+            <div id="chat-avatar" class="profile-avatar profile-avatar-small">?</div>
+            <strong id="chat-name"></strong>
+          </div>
+        </div>
+        <div id="chat-messages" class="chat-messages" aria-live="polite"></div>
+        <form id="chat-form" class="chat-form">
+          <textarea id="chat-input" rows="1" maxlength="1000" placeholder="Write a message…" required></textarea>
+          <button type="submit" id="chat-send-btn" class="button primary-button chat-send">Send</button>
+        </form>
+        <p class="auth-error" id="chat-error" hidden></p>
       </div>
     </div>
   </div>
@@ -1351,6 +1379,7 @@
         favCheckbox.disabled = false;
         window.loadUserFavorites(user.uid);
         backfillPublicProfile(user.uid);
+        startInboxListener(user.uid);
 
         db.collection('users').doc(user.uid).get().then(function (doc) {
           if (doc.exists) {
@@ -1368,6 +1397,7 @@
         window.clearUserFavorites();
         window.applyModuleFilters();
         hideWelcomeBanner();
+        stopInboxListener();
         closePeopleModal();
         peopleCache = null;
       }
@@ -1385,6 +1415,8 @@
     const peopleList = document.getElementById('people-list');
     const peopleEmpty = document.getElementById('people-empty');
     const peopleSearch = document.getElementById('people-search');
+    const viewInbox = document.getElementById('people-view-inbox');
+    const viewChat = document.getElementById('people-view-chat');
     const pmBio = document.getElementById('pm-bio');
     let peopleCache = null; // [{uid, firstName, lastName, year, bio}]
 
@@ -1429,10 +1461,15 @@
       viewMe.hidden = name !== 'me';
       viewDir.hidden = name !== 'directory';
       viewUser.hidden = name !== 'user';
+      viewInbox.hidden = name !== 'inbox';
+      viewChat.hidden = name !== 'chat';
+      if (name !== 'chat') stopChatListener();
       peopleModal.classList.add('is-open');
     }
     function closePeopleModal() {
+      stopChatListener();
       peopleModal.classList.remove('is-open');
+      if (typeof updateMessagesBadge === 'function') updateMessagesBadge();
     }
 
     // ----- My profile -----
@@ -1602,7 +1639,10 @@
       const bioEl = document.getElementById('pu-bio');
       bioEl.textContent = p.bio || 'This student hasn\'t written a bio yet.';
       bioEl.classList.toggle('is-empty', !p.bio);
-      document.getElementById('pu-edit-btn').hidden = !(auth.currentUser && auth.currentUser.uid === p.uid);
+      const isMe = !!(auth.currentUser && auth.currentUser.uid === p.uid);
+      viewedProfile = p;
+      document.getElementById('pu-edit-btn').hidden = !isMe;
+      document.getElementById('pu-message-btn').hidden = isMe;
       showPeopleView('user');
     }
 
@@ -1620,6 +1660,308 @@
     });
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape' && peopleModal.classList.contains('is-open')) closePeopleModal();
+    });
+
+    // =====================================================
+    // ---- Direct messages (1-to-1 chats) ----
+    // chats/{uidA_uidB}            -> participants, names, last message info, lastRead
+    // chats/{uidA_uidB}/messages/* -> senderId, text, createdAt
+    // =====================================================
+    const chatMessagesEl = document.getElementById('chat-messages');
+    const chatInput = document.getElementById('chat-input');
+    const chatError = document.getElementById('chat-error');
+    let viewedProfile = null;
+    let inboxUnsub = null;
+    let inboxChats = [];
+    let currentChat = null;   // { id, otherUid, otherName }
+    let chatUnsub = null;
+    let markedMsgId = null;
+
+    function chatIdFor(a, b) { return [a, b].sort().join('_'); }
+    function tsMs(t) { return t && t.toMillis ? t.toMillis() : Date.now(); }
+    function initialsFromName(name) {
+      const parts = (name || '').trim().split(/\s+/).filter(Boolean);
+      return ((parts[0] ? parts[0][0] : '') + (parts[1] ? parts[1][0] : '')).toUpperCase() || '?';
+    }
+    function fmtTime(ms) {
+      const d = new Date(ms);
+      const now = new Date();
+      if (d.toDateString() === now.toDateString()) {
+        return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      }
+      return d.toLocaleDateString([], { day: 'numeric', month: 'short' });
+    }
+
+    // ----- Inbox (real-time, also drives the unread badge) -----
+    function isUnread(chat) {
+      const me = auth.currentUser ? auth.currentUser.uid : null;
+      if (!me || chat.lastSenderId === me || !chat.lastMessage) return false;
+      const chatOpen = currentChat && currentChat.id === chat.id &&
+        !viewChat.hidden && peopleModal.classList.contains('is-open');
+      if (chatOpen) return false;
+      const lr = chat.lastRead || {};
+      if (!(me in lr)) return true;
+      return tsMs(chat.lastMessageAt) > tsMs(lr[me]);
+    }
+
+    function updateMessagesBadge() {
+      const badge = document.getElementById('nav-messages-badge');
+      const n = inboxChats.filter(isUnread).length;
+      badge.textContent = n > 9 ? '9+' : String(n);
+      badge.hidden = n === 0;
+    }
+
+    function startInboxListener(uid) {
+      stopInboxListener();
+      inboxUnsub = db.collection('chats')
+        .where('participants', 'array-contains', uid)
+        .onSnapshot(function (snap) {
+          inboxChats = snap.docs.map(function (d) {
+            return Object.assign({ id: d.id }, d.data());
+          });
+          updateMessagesBadge();
+          if (!viewInbox.hidden && peopleModal.classList.contains('is-open')) renderInbox();
+        }, function (err) {
+          console.error('Inbox listener failed:', err.code, err.message);
+        });
+    }
+
+    function stopInboxListener() {
+      if (inboxUnsub) { inboxUnsub(); inboxUnsub = null; }
+      inboxChats = [];
+      currentChat = null;
+      updateMessagesBadge();
+    }
+
+    function renderInbox() {
+      const me = auth.currentUser ? auth.currentUser.uid : null;
+      const list = document.getElementById('inbox-list');
+      const empty = document.getElementById('inbox-empty');
+      list.textContent = '';
+
+      const chats = inboxChats.filter(function (c) { return c.lastMessage; })
+        .sort(function (a, b) { return tsMs(b.lastMessageAt) - tsMs(a.lastMessageAt); });
+      empty.hidden = chats.length > 0;
+
+      chats.forEach(function (c) {
+        const otherUid = (c.participants || []).filter(function (u) { return u !== me; })[0];
+        const otherName = (c.names && c.names[otherUid]) || 'Student';
+
+        const card = document.createElement('button');
+        card.type = 'button';
+        card.className = 'people-card';
+
+        const av = document.createElement('div');
+        av.className = 'profile-avatar profile-avatar-small';
+        av.textContent = initialsFromName(otherName);
+
+        const info = document.createElement('div');
+        info.className = 'people-card-info';
+        const nm = document.createElement('strong');
+        nm.textContent = otherName;
+        const prev = document.createElement('span');
+        prev.className = 'people-card-bio';
+        prev.textContent = (c.lastSenderId === me ? 'You: ' : '') + c.lastMessage;
+        info.appendChild(nm);
+        info.appendChild(prev);
+
+        const meta = document.createElement('div');
+        meta.className = 'people-card-meta';
+        const time = document.createElement('span');
+        time.textContent = fmtTime(tsMs(c.lastMessageAt));
+        meta.appendChild(time);
+        if (isUnread(c)) {
+          const dot = document.createElement('span');
+          dot.className = 'people-card-unread';
+          meta.appendChild(dot);
+        }
+
+        card.appendChild(av);
+        card.appendChild(info);
+        card.appendChild(meta);
+        card.addEventListener('click', function () { openChat(otherUid, otherName); });
+        list.appendChild(card);
+      });
+    }
+
+    function openInbox() {
+      if (!auth.currentUser) return openAuthModal('signin');
+      showPeopleView('inbox');
+      renderInbox();
+    }
+
+    // ----- Chat window -----
+    function stopChatListener() {
+      if (chatUnsub) { chatUnsub(); chatUnsub = null; }
+      currentChat = null;
+      markedMsgId = null;
+    }
+
+    function openChat(otherUid, otherName) {
+      const user = auth.currentUser;
+      if (!user) return openAuthModal('signin');
+      if (!otherUid || otherUid === user.uid) return;
+
+      stopChatListener();
+      currentChat = {
+        id: chatIdFor(user.uid, otherUid),
+        otherUid: otherUid,
+        otherName: otherName || 'Student'
+      };
+
+      chatError.hidden = true;
+      chatInput.value = '';
+      chatInput.style.height = 'auto';
+      chatMessagesEl.textContent = 'Loading…';
+      document.getElementById('chat-name').textContent = currentChat.otherName;
+      document.getElementById('chat-avatar').textContent = initialsFromName(currentChat.otherName);
+      showPeopleView('chat');
+      // showPeopleView('chat') doesn't stop listeners, but re-assert currentChat to be safe
+      const thisChat = currentChat;
+
+      chatUnsub = db.collection('chats').doc(thisChat.id).collection('messages')
+        .orderBy('createdAt')
+        .limitToLast(100)
+        .onSnapshot(function (snap) {
+          renderMessages(snap.docs);
+          const docs = snap.docs;
+          if (docs.length) {
+            const last = docs[docs.length - 1];
+            if (last.data().senderId !== user.uid && last.id !== markedMsgId) {
+              markedMsgId = last.id;
+              markChatRead(thisChat.id);
+            }
+          }
+          updateMessagesBadge();
+        }, function (err) {
+          console.error('Chat listener failed:', err.code, err.message);
+          chatMessagesEl.textContent = err.code === 'permission-denied'
+            ? 'Permission denied: update your Firestore rules to allow chats.'
+            : 'Could not load this conversation. Please try again.';
+        });
+
+      setTimeout(function () { chatInput.focus(); }, 50);
+    }
+
+    function markChatRead(chatId) {
+      const user = auth.currentUser;
+      if (!user) return;
+      const lr = {};
+      lr[user.uid] = firebase.firestore.FieldValue.serverTimestamp();
+      db.collection('chats').doc(chatId).set({ lastRead: lr }, { merge: true })
+        .catch(function (err) { console.error('Mark read failed:', err); });
+    }
+
+    function renderMessages(docs) {
+      const me = auth.currentUser ? auth.currentUser.uid : null;
+      chatMessagesEl.textContent = '';
+
+      if (!docs.length) {
+        const e = document.createElement('p');
+        e.className = 'chat-empty';
+        e.textContent = 'No messages yet. Say hi 👋';
+        chatMessagesEl.appendChild(e);
+        return;
+      }
+
+      let lastDay = '';
+      docs.forEach(function (d) {
+        const m = d.data({ serverTimestamps: 'estimate' });
+        const when = m.createdAt && m.createdAt.toDate ? m.createdAt.toDate() : new Date();
+
+        const day = when.toDateString();
+        if (day !== lastDay) {
+          lastDay = day;
+          const sep = document.createElement('div');
+          sep.className = 'chat-day';
+          sep.textContent = when.toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short' });
+          chatMessagesEl.appendChild(sep);
+        }
+
+        const row = document.createElement('div');
+        row.className = 'chat-msg ' + (m.senderId === me ? 'mine' : 'theirs');
+        const bubble = document.createElement('div');
+        bubble.className = 'chat-bubble';
+        bubble.textContent = m.text;
+        const time = document.createElement('span');
+        time.className = 'chat-time';
+        time.textContent = when.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        row.appendChild(bubble);
+        row.appendChild(time);
+        chatMessagesEl.appendChild(row);
+      });
+
+      chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+    }
+
+    document.getElementById('chat-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      const user = auth.currentUser;
+      if (!user || !currentChat) return;
+      const text = chatInput.value.trim().slice(0, 1000);
+      if (!text) return;
+
+      const sendBtn = document.getElementById('chat-send-btn');
+      const chat = currentChat;
+      chatError.hidden = true;
+      sendBtn.disabled = true;
+
+      const ts = firebase.firestore.FieldValue.serverTimestamp();
+      const chatRef = db.collection('chats').doc(chat.id);
+      const msgRef = chatRef.collection('messages').doc();
+
+      const names = {};
+      names[user.uid] = user.displayName || 'Student';
+      // Only write the other person's name when the chat is brand new (don't overwrite a fresher name)
+      const exists = inboxChats.some(function (c) { return c.id === chat.id; });
+      if (!exists) names[chat.otherUid] = chat.otherName;
+      const lr = {};
+      lr[user.uid] = ts;
+
+      const batch = db.batch();
+      batch.set(chatRef, {
+        participants: [user.uid, chat.otherUid].sort(),
+        names: names,
+        lastMessage: text.slice(0, 120),
+        lastMessageAt: ts,
+        lastSenderId: user.uid,
+        lastRead: lr
+      }, { merge: true });
+      batch.set(msgRef, { senderId: user.uid, text: text, createdAt: ts });
+
+      batch.commit().then(function () {
+        chatInput.value = '';
+        chatInput.style.height = 'auto';
+        chatInput.focus();
+      }).catch(function (err) {
+        console.error('Send failed:', err);
+        chatError.textContent = err.code === 'permission-denied'
+          ? 'Could not send: permission denied (check your Firestore rules).'
+          : 'Could not send your message. Please try again.';
+        chatError.hidden = false;
+      }).then(function () {
+        sendBtn.disabled = false;
+      });
+    });
+
+    // Enter = send, Shift+Enter = new line; textarea grows with content
+    chatInput.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        document.getElementById('chat-form').requestSubmit();
+      }
+    });
+    chatInput.addEventListener('input', function () {
+      chatInput.style.height = 'auto';
+      chatInput.style.height = Math.min(chatInput.scrollHeight, 110) + 'px';
+    });
+
+    // ----- Wiring -----
+    document.getElementById('nav-messages-btn').addEventListener('click', openInbox);
+    document.getElementById('inbox-browse-btn').addEventListener('click', openDirectory);
+    document.getElementById('chat-back-btn').addEventListener('click', openInbox);
+    document.getElementById('pu-message-btn').addEventListener('click', function () {
+      if (viewedProfile) openChat(viewedProfile.uid, fullName(viewedProfile));
     });
   </script>
 
