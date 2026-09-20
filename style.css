@@ -418,9 +418,13 @@ h4 {
   position: fixed;
   inset: 0;
   z-index: 200;
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: center;
+}
+
+.auth-modal.is-open {
+  display: flex;
 }
 
 .auth-modal-backdrop {
