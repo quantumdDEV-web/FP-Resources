@@ -2591,7 +2591,12 @@ h4 {
   font-size: 0.75rem;
 }
 
-.review-like-btn {
+.reaction-bar {
+  display: flex;
+  gap: 6px;
+}
+
+.review-reaction-btn {
   display: flex;
   align-items: center;
   gap: 5px;
@@ -2606,15 +2611,27 @@ h4 {
   transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
 }
 
-.review-like-btn:hover {
+.review-reaction-btn:hover {
   border-color: rgba(102, 217, 255, 0.5);
   color: var(--text);
 }
 
-.review-like-btn.is-liked {
-  border-color: rgba(255, 143, 177, 0.5);
-  background: rgba(255, 143, 177, 0.1);
-  color: #ff8fb1;
+.review-reaction-btn.reaction-like {
+  border-color: rgba(102, 217, 255, 0.5);
+  background: rgba(102, 217, 255, 0.1);
+  color: var(--accent);
+}
+
+.review-reaction-btn.reaction-laugh {
+  border-color: rgba(255, 200, 87, 0.5);
+  background: rgba(255, 200, 87, 0.1);
+  color: #ffc857;
+}
+
+.review-reaction-btn.reaction-angry {
+  border-color: rgba(255, 107, 107, 0.5);
+  background: rgba(255, 107, 107, 0.1);
+  color: #ff8a8a;
 }
 
 .review-report-btn {
