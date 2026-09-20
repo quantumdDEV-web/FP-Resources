@@ -523,6 +523,18 @@
    </div> <!-- closes upload-notice -->
 
 
+      <!-- Tronc Commun Physique: S1–S4 grouped together and collapsed by default to keep the page short -->
+      <details class="tronc-commun" id="tronc-commun">
+        <summary class="tronc-commun-summary">
+          <div>
+            <span class="semester-number">TC</span>
+            <h3>Tronc Commun Physique <span class="tronc-commun-sub">(S1–S4)</span></h3>
+          </div>
+          <span class="tronc-commun-chevron" aria-hidden="true">▾</span>
+        </summary>
+
+        <div class="tronc-commun-body">
+
       <!-- Semester 1 -->
       <div class="semester-block">
         <div class="semester-header">
@@ -834,6 +846,9 @@
 
   </div>
 </div>
+
+        </div>
+      </details>
 
 <!-- COMMUNITY DOCUMENTS SECTION -->
     
@@ -1215,6 +1230,7 @@
       const input = document.getElementById('module-search-input');
       const emptyMessage = document.getElementById('module-search-empty');
       const semesterBlocks = Array.from(document.querySelectorAll('.semester-block'));
+      const troncCommun = document.getElementById('tronc-commun');
       if (!input) return;
 
       window.applyModuleFilters = function () {
@@ -1238,6 +1254,13 @@
           totalVisible += visibleInBlock;
           block.style.display = visibleInBlock === 0 ? 'none' : '';
         });
+
+        // Auto-open the collapsed Tronc Commun group when a search/filter actually finds
+        // something inside it, so results aren't hidden behind the closed accordion.
+        if (troncCommun && (query || favoritesOnly)) {
+          const hasVisible = troncCommun.querySelector('.module-card:not([style*="display: none"])');
+          if (hasVisible) troncCommun.open = true;
+        }
 
         emptyMessage.hidden = totalVisible !== 0;
       };
