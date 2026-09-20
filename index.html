@@ -16,6 +16,9 @@
   <meta name="theme-color" content="#0b1220" />
 <link rel="icon" type="image/png" href="./logo.png" />
 
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
 
@@ -279,6 +282,10 @@
       <div id="prof-view-add" hidden>
         <h3 class="profile-modal-title">Add a professor</h3>
         <p class="profile-modal-subtitle">Can't find them in the list? Add them so students can review them.</p>
+        <div class="pa-preview">
+          <div id="pa-avatar" class="prof-avatar prof-avatar-lg"></div>
+          <span>Every professor gets their own look 🎓</span>
+        </div>
         <form id="prof-add-form" class="auth-form">
           <label for="pa-name">Professor's name</label>
           <input type="text" id="pa-name" required minlength="3" maxlength="60" placeholder="e.g. Dr. Ahmed Benali" />
@@ -302,13 +309,23 @@
 
       <!-- Professor details + reviews -->
       <div id="prof-view-detail" hidden>
-        <div class="prof-detail-head">
-          <div class="prof-detail-info">
+        <div class="prof-board">
+          <span class="chalk-doodle cd-1" aria-hidden="true">E = mc²</span>
+          <span class="chalk-doodle cd-2" aria-hidden="true">ΔxΔp ≥ ħ/2</span>
+          <span class="chalk-doodle cd-3" aria-hidden="true">∇·E = ρ/ε₀</span>
+          <span class="chalk-doodle cd-4" aria-hidden="true">λ = h/p</span>
+          <span class="chalk-doodle cd-5" aria-hidden="true">F = ma</span>
+
+          <div id="pd-portrait" class="prof-avatar prof-avatar-lg"></div>
+
+          <div class="prof-board-info">
+            <span class="prof-board-tag">Professor</span>
             <h3 id="pd-name"></h3>
-            <span id="pd-dept" class="profile-year-chip"></span>
+            <span id="pd-dept" class="chalk-chip"></span>
           </div>
-          <div class="prof-detail-score">
-            <strong id="pd-avg">–</strong>
+
+          <div class="prof-board-score">
+            <div class="prof-board-grade"><strong id="pd-avg">–</strong><span>/5</span></div>
             <span id="pd-stars"></span>
             <span id="pd-count" class="prof-count"></span>
           </div>
@@ -2230,6 +2247,83 @@
       return t.slice(0, 100);
     }
 
+    // ----- Imaginary professor avatar (unique look per name, no photos needed) -----
+    function profAvatarEl(name) {
+      const key = profSlug(name || '') || 'prof';
+      let h = 5381;
+      for (let i = 0; i < key.length; i++) h = ((h << 5) + h + key.charCodeAt(i)) >>> 0;
+      const pick = function (arr, shift) { return arr[(h >>> shift) % arr.length]; };
+
+      const skin = pick(['#f3d2b3', '#e0ac82', '#c68863', '#8d5a3b'], 0);
+      const hair = pick(['#2b2b2f', '#5b3a29', '#b9b9c2', '#efede6'], 3);
+      const suit = pick(['#2c3e66', '#3a3a4a', '#1f4d4a', '#5a2f4b', '#4a3b2a'], 6);
+      const tie = pick(['#ff6b6b', '#ffcf5c', '#49f2c2', '#66d9ff', '#8b7cff'], 9);
+      const hairStyle = (h >>> 12) % 3;   // 0 = bald on top, 1 = full hair, 2 = wild "genius" hair
+      const squareGlasses = (h >>> 15) % 2 === 1;
+      const facial = (h >>> 17) % 3;      // 0 none, 1 mustache, 2 beard
+      const hasCap = (h >>> 19) % 4 === 0;
+      const lightHair = hair === '#b9b9c2' || hair === '#efede6';
+      const brow = lightHair ? '#8a8a92' : hair;
+
+      let svg = '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">';
+      // suit, collar, bow tie, neck
+      svg += '<path d="M10 100 C10 76 30 70 50 70 C70 70 90 76 90 100Z" fill="' + suit + '"/>';
+      svg += '<rect x="43.5" y="56" width="13" height="18" rx="4" fill="' + skin + '"/>';
+      svg += '<path d="M40 70 L50 86 L60 70Z" fill="#f4f1e8"/>';
+      svg += '<path d="M50 77 L40 71.5 L40 82.5Z" fill="' + tie + '"/><path d="M50 77 L60 71.5 L60 82.5Z" fill="' + tie + '"/>';
+      svg += '<circle cx="50" cy="77" r="2.4" fill="' + tie + '" stroke="rgba(0,0,0,.25)" stroke-width=".8"/>';
+      // ears + head
+      svg += '<circle cx="31" cy="46" r="4" fill="' + skin + '"/><circle cx="69" cy="46" r="4" fill="' + skin + '"/>';
+      svg += '<ellipse cx="50" cy="43" rx="19" ry="22" fill="' + skin + '"/>';
+      // hair
+      if (hairStyle === 0) {
+        svg += '<ellipse cx="32.5" cy="40" rx="4.5" ry="8.5" fill="' + hair + '"/><ellipse cx="67.5" cy="40" rx="4.5" ry="8.5" fill="' + hair + '"/>';
+      } else if (hairStyle === 1) {
+        svg += '<path d="M30.5 43 C29 21 41 17 50 17 C60 17 71 21 69.5 43 C66 33 60 29 50 29 C40 29 34 33 30.5 43Z" fill="' + hair + '"/>';
+      } else {
+        [[33, 30, 8], [42, 22, 9], [55, 20, 9], [66, 28, 8], [30, 42, 5], [70, 42, 5]].forEach(function (c) {
+          svg += '<circle cx="' + c[0] + '" cy="' + c[1] + '" r="' + c[2] + '" fill="' + hair + '"/>';
+        });
+      }
+      // beard / mustache
+      if (facial === 2) {
+        svg += '<path d="M31 50 Q31 72 50 72 Q69 72 69 50 Q64 62 50 62 Q36 62 31 50Z" fill="' + hair + '"/>';
+      }
+      if (facial >= 1) {
+        svg += '<path d="M41 55 Q45 50.5 50 53.5 Q55 50.5 59 55 Q54 58 50 56 Q46 58 41 55Z" fill="' + hair + '"/>';
+      }
+      // nose + smile
+      svg += '<path d="M50 46 Q47.5 51.5 50.5 52" stroke="rgba(0,0,0,.28)" stroke-width="1.4" fill="none" stroke-linecap="round"/>';
+      svg += '<path d="M45.5 60 Q50 64.5 54.5 60" stroke="' + (facial === 2 && lightHair ? '#7a3f2f' : '#6b3526') + '" stroke-width="1.7" fill="none" stroke-linecap="round"/>';
+      // eyebrows, glasses, eyes
+      svg += '<path d="M35.5 38.5 Q41 35.5 46.5 38" stroke="' + brow + '" stroke-width="2.2" fill="none" stroke-linecap="round"/>';
+      svg += '<path d="M53.5 38 Q59 35.5 64.5 38.5" stroke="' + brow + '" stroke-width="2.2" fill="none" stroke-linecap="round"/>';
+      if (squareGlasses) {
+        svg += '<rect x="34" y="38.5" width="15" height="11" rx="3" fill="rgba(255,255,255,.2)" stroke="#2b2b2f" stroke-width="1.8"/>';
+        svg += '<rect x="51" y="38.5" width="15" height="11" rx="3" fill="rgba(255,255,255,.2)" stroke="#2b2b2f" stroke-width="1.8"/>';
+        svg += '<path d="M49 43 L51 43" stroke="#2b2b2f" stroke-width="1.8"/>';
+      } else {
+        svg += '<circle cx="41.5" cy="44" r="7" fill="rgba(255,255,255,.2)" stroke="#2b2b2f" stroke-width="1.8"/>';
+        svg += '<circle cx="58.5" cy="44" r="7" fill="rgba(255,255,255,.2)" stroke="#2b2b2f" stroke-width="1.8"/>';
+        svg += '<path d="M48.5 43 Q50 41.5 51.5 43" stroke="#2b2b2f" stroke-width="1.8" fill="none"/>';
+      }
+      svg += '<path d="M34.5 43 L30.5 42" stroke="#2b2b2f" stroke-width="1.6"/><path d="M65.5 43 L69.5 42" stroke="#2b2b2f" stroke-width="1.6"/>';
+      svg += '<circle cx="41.5" cy="44" r="1.9" fill="#1c1c22"/><circle cx="58.5" cy="44" r="1.9" fill="#1c1c22"/>';
+      // graduation cap
+      if (hasCap) {
+        svg += '<path d="M34 24 L34 33 Q50 40 66 33 L66 24Z" fill="#26262f"/>';
+        svg += '<path d="M50 9 L84 20 L50 31 L16 20Z" fill="#1b1b22"/>';
+        svg += '<path d="M50 9 L84 20 L50 31 L16 20Z" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="1"/>';
+        svg += '<path d="M78 21 L78 36" stroke="#ffcf5c" stroke-width="1.8"/><circle cx="78" cy="37.5" r="2.6" fill="#ffcf5c"/>';
+      }
+      svg += '</svg>';
+
+      const span = document.createElement('span');
+      span.className = 'prof-avatar-svg';
+      span.innerHTML = svg; // built only from constants and colors picked from fixed lists, never user text
+      return span;
+    }
+
     // ----- Professors grid -----
     function renderProfessors() {
       const stats = computeStats();
@@ -2259,8 +2353,8 @@
         const top = document.createElement('div');
         top.className = 'prof-card-top';
         const av = document.createElement('div');
-        av.className = 'profile-avatar profile-avatar-small';
-        av.textContent = initialsFromName(p.name);
+        av.className = 'prof-avatar';
+        av.appendChild(profAvatarEl(p.name));
         const nameBox = document.createElement('div');
         nameBox.className = 'prof-card-name';
         const nm = document.createElement('strong');
@@ -2306,9 +2400,17 @@
       document.getElementById('pa-error').hidden = true;
       document.getElementById('pa-name').value = profSearch.value.trim().slice(0, 60);
       document.getElementById('pa-dept').value = '';
+      updateAddPreview();
       showProfView('add');
       setTimeout(function () { document.getElementById('pa-name').focus(); }, 50);
     }
+
+    function updateAddPreview() {
+      const box = document.getElementById('pa-avatar');
+      box.textContent = '';
+      box.appendChild(profAvatarEl(document.getElementById('pa-name').value));
+    }
+    document.getElementById('pa-name').addEventListener('input', updateAddPreview);
 
     document.getElementById('prof-add-form').addEventListener('submit', function (e) {
       e.preventDefault();
@@ -2378,6 +2480,9 @@
       const stats = computeStats()[prof.id] || { n: 0, avg: 0 };
 
       document.getElementById('pd-name').textContent = prof.name;
+      const portrait = document.getElementById('pd-portrait');
+      portrait.textContent = '';
+      portrait.appendChild(profAvatarEl(prof.name));
       const deptEl = document.getElementById('pd-dept');
       deptEl.textContent = prof.department || '';
       deptEl.hidden = !prof.department;
