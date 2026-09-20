@@ -172,7 +172,10 @@
         <p class="profile-modal-subtitle">This is what other students see when they open your profile.</p>
 
         <div class="profile-hero">
-          <div id="pm-avatar" class="profile-avatar">?</div>
+          <div class="profile-avatar-wrap">
+            <div id="pm-avatar" class="profile-avatar">?</div>
+            <button type="button" id="pm-shuffle-avatar" class="avatar-shuffle-btn" title="Get a new random look">🎲 New look</button>
+          </div>
           <div class="profile-hero-text">
             <strong id="pm-preview-name">—</strong>
             <span id="pm-preview-year" class="profile-year-chip"></span>
@@ -1546,7 +1549,12 @@
     const viewInbox = document.getElementById('people-view-inbox');
     const viewChat = document.getElementById('people-view-chat');
     const pmBio = document.getElementById('pm-bio');
-    let peopleCache = null; // [{uid, firstName, lastName, year, bio}]
+    let peopleCache = null; // [{uid, firstName, lastName, year, bio, avatarSeed}]
+    let myAvatarSeed = null; // current user's avatar look, editable via "New look" shuffle button
+
+    function randomAvatarSeed() {
+      return Math.random().toString(36).slice(2) + Date.now().toString(36);
+    }
 
     function savePublicProfile(uid, fields) {
       const data = Object.assign({}, fields, {
@@ -1669,7 +1677,7 @@
       el.appendChild(studentAvatarEl(seed));
     }
     function setAvatar(el, p) {
-      setAvatarBySeed(el, (p && (p.uid || fullName(p))) || 'student');
+      setAvatarBySeed(el, (p && (p.avatarSeed || p.uid || fullName(p))) || 'student');
     }
 
     function showPeopleView(name) {
@@ -1693,7 +1701,7 @@
         firstName: document.getElementById('pm-firstname').value.trim(),
         lastName: document.getElementById('pm-lastname').value.trim()
       };
-      setAvatar(document.getElementById('pm-avatar'), p);
+      setAvatarBySeed(document.getElementById('pm-avatar'), myAvatarSeed || (auth.currentUser && auth.currentUser.uid) || 'student');
       document.getElementById('pm-preview-name').textContent = fullName(p);
       const y = document.getElementById('pm-year').value;
       document.getElementById('pm-preview-year').textContent = y;
@@ -1719,6 +1727,7 @@
         document.getElementById('pm-lastname').value = pub.lastName || priv.lastName || nameParts.slice(1).join(' ') || '';
         document.getElementById('pm-year').value = pub.year || priv.year || '';
         pmBio.value = pub.bio || '';
+        myAvatarSeed = pub.avatarSeed || user.uid;
         updateMyPreview();
       }).catch(function (err) {
         console.error('Could not load profile:', err);
@@ -1731,6 +1740,11 @@
     ['pm-firstname', 'pm-lastname', 'pm-year', 'pm-bio'].forEach(function (id) {
       document.getElementById(id).addEventListener('input', updateMyPreview);
       document.getElementById(id).addEventListener('change', updateMyPreview);
+    });
+
+    document.getElementById('pm-shuffle-avatar').addEventListener('click', function () {
+      myAvatarSeed = randomAvatarSeed();
+      updateMyPreview();
     });
 
     document.getElementById('people-profile-form').addEventListener('submit', function (e) {
@@ -1746,7 +1760,8 @@
         firstName: document.getElementById('pm-firstname').value.trim(),
         lastName: document.getElementById('pm-lastname').value.trim(),
         year: document.getElementById('pm-year').value,
-        bio: pmBio.value.trim().slice(0, 300)
+        bio: pmBio.value.trim().slice(0, 300),
+        avatarSeed: myAvatarSeed || user.uid
       };
 
       btn.disabled = true;
