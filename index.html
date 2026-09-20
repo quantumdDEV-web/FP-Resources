@@ -1581,8 +1581,95 @@
       const b = (p.lastName || '').charAt(0);
       return ((a + b).toUpperCase()) || '?';
     }
+    // ----- Imaginary student avatar (unique look per person, no photos needed) -----
+    function studentAvatarEl(seed) {
+      const key = (seed || 'student').toString().toLowerCase();
+      let h = 5381;
+      for (let i = 0; i < key.length; i++) h = ((h << 5) + h + key.charCodeAt(i)) >>> 0;
+      const pick = function (arr, shift) { return arr[(h >>> shift) % arr.length]; };
+
+      const skin = pick(['#f3d2b3', '#e0ac82', '#c68863', '#8d5a3b'], 0);
+      const hair = pick(['#2b2b2f', '#5b3a29', '#a5673f', '#e8b923', '#c94f4f'], 3);
+      const hoodie = pick(['#3a86ff', '#ff6b6b', '#49f2c2', '#8b7cff', '#ffcf5c', '#2c3e66'], 6);
+      const accent = pick(['#f4f1e8', '#1c1c22', '#ffcf5c', '#66d9ff'], 9);
+      const hairStyle = (h >>> 12) % 4;    // 0 short, 1 messy/wavy, 2 ponytail, 3 buzzed
+      const glasses = (h >>> 15) % 3;      // 0 none, 1 round, 2 square
+      const hasFreckles = (h >>> 17) % 3 === 0;
+      const headwear = (h >>> 19) % 3;     // 0 none, 1 beanie, 2 headphones
+      const lightHair = hair === '#e8b923';
+      const brow = lightHair ? '#a9860f' : hair;
+
+      let svg = '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">';
+      // hoodie body + backpack straps + drawstrings
+      svg += '<path d="M8 100 C8 74 28 66 50 66 C72 66 92 74 92 100Z" fill="' + hoodie + '"/>';
+      svg += '<path d="M36 66 Q50 78 64 66" stroke="rgba(0,0,0,.18)" stroke-width="2.2" fill="none"/>';
+      svg += '<path d="M20 100 L28 70" stroke="rgba(0,0,0,.15)" stroke-width="6" stroke-linecap="round"/>';
+      svg += '<path d="M80 100 L72 70" stroke="rgba(0,0,0,.15)" stroke-width="6" stroke-linecap="round"/>';
+      svg += '<circle cx="44" cy="80" r="1.8" fill="' + accent + '"/><circle cx="56" cy="80" r="1.8" fill="' + accent + '"/>';
+      svg += '<path d="M44 80 L42 92" stroke="' + accent + '" stroke-width="1.6" stroke-linecap="round"/>';
+      svg += '<path d="M56 80 L58 92" stroke="' + accent + '" stroke-width="1.6" stroke-linecap="round"/>';
+      // neck, ears, head
+      svg += '<rect x="44" y="58" width="12" height="14" rx="4" fill="' + skin + '"/>';
+      svg += '<circle cx="31" cy="46" r="4" fill="' + skin + '"/><circle cx="69" cy="46" r="4" fill="' + skin + '"/>';
+      svg += '<ellipse cx="50" cy="43" rx="19" ry="22" fill="' + skin + '"/>';
+      // freckles
+      if (hasFreckles) {
+        [[40, 50], [43, 52], [46, 50], [54, 50], [57, 52], [60, 50]].forEach(function (c) {
+          svg += '<circle cx="' + c[0] + '" cy="' + c[1] + '" r="0.8" fill="rgba(0,0,0,.25)"/>';
+        });
+      }
+      // hair styles
+      if (hairStyle === 0) {
+        svg += '<path d="M30 40 C29 22 40 18 50 18 C60 18 71 22 70 40 C67 30 60 27 50 27 C40 27 33 30 30 40Z" fill="' + hair + '"/>';
+      } else if (hairStyle === 1) {
+        [[33, 26, 7], [42, 19, 8], [52, 17, 8], [62, 20, 8], [70, 28, 6], [28, 36, 5], [72, 36, 5]].forEach(function (c) {
+          svg += '<circle cx="' + c[0] + '" cy="' + c[1] + '" r="' + c[2] + '" fill="' + hair + '"/>';
+        });
+      } else if (hairStyle === 2) {
+        svg += '<path d="M30.5 40 C29 21 41 17 50 17 C60 17 71 21 69.5 40 C66 30 60 27 50 27 C40 27 34 30 30.5 40Z" fill="' + hair + '"/>';
+        svg += '<path d="M70 30 Q82 34 78 52 Q75 58 68 54 Q76 44 70 30Z" fill="' + hair + '"/>';
+      } else {
+        svg += '<path d="M31 36 C31 22 40 18 50 18 C60 18 69 22 69 36" fill="none" stroke="' + hair + '" stroke-width="5" stroke-linecap="round"/>';
+      }
+      // headwear
+      if (headwear === 1) {
+        svg += '<path d="M29 34 Q50 12 71 34 L71 40 Q50 32 29 40Z" fill="' + hoodie + '"/>';
+        svg += '<circle cx="50" cy="16" r="3" fill="' + accent + '"/>';
+      } else if (headwear === 2) {
+        svg += '<path d="M28 40 Q50 12 72 40" fill="none" stroke="#2b2b2f" stroke-width="3"/>';
+        svg += '<rect x="23" y="38" width="8" height="14" rx="3" fill="' + accent + '"/>';
+        svg += '<rect x="69" y="38" width="8" height="14" rx="3" fill="' + accent + '"/>';
+      }
+      // eyebrows, glasses, eyes
+      svg += '<path d="M36 39 Q41 36.5 46 38.5" stroke="' + brow + '" stroke-width="2" fill="none" stroke-linecap="round"/>';
+      svg += '<path d="M54 38.5 Q59 36.5 64 39" stroke="' + brow + '" stroke-width="2" fill="none" stroke-linecap="round"/>';
+      if (glasses === 1) {
+        svg += '<circle cx="41.5" cy="44" r="7" fill="rgba(255,255,255,.15)" stroke="#2b2b2f" stroke-width="1.6"/>';
+        svg += '<circle cx="58.5" cy="44" r="7" fill="rgba(255,255,255,.15)" stroke="#2b2b2f" stroke-width="1.6"/>';
+        svg += '<path d="M48.5 43 Q50 41.8 51.5 43" stroke="#2b2b2f" stroke-width="1.6" fill="none"/>';
+      } else if (glasses === 2) {
+        svg += '<rect x="34.5" y="39" width="14" height="10" rx="3" fill="rgba(255,255,255,.15)" stroke="#2b2b2f" stroke-width="1.6"/>';
+        svg += '<rect x="51.5" y="39" width="14" height="10" rx="3" fill="rgba(255,255,255,.15)" stroke="#2b2b2f" stroke-width="1.6"/>';
+        svg += '<path d="M48.5 43 L51.5 43" stroke="#2b2b2f" stroke-width="1.6"/>';
+      }
+      svg += '<circle cx="41.5" cy="44" r="2" fill="#1c1c22"/><circle cx="58.5" cy="44" r="2" fill="#1c1c22"/>';
+      // nose + friendly smile
+      svg += '<path d="M50 46 Q47.8 51 50.3 51.6" stroke="rgba(0,0,0,.25)" stroke-width="1.3" fill="none" stroke-linecap="round"/>';
+      svg += '<path d="M44 58.5 Q50 65 56 58.5" stroke="#a4503c" stroke-width="1.8" fill="none" stroke-linecap="round"/>';
+      svg += '</svg>';
+
+      const span = document.createElement('span');
+      span.className = 'student-avatar-svg';
+      span.innerHTML = svg; // built only from constants and colors picked from fixed lists, never user text
+      return span;
+    }
+
+    function setAvatarBySeed(el, seed) {
+      el.textContent = '';
+      el.appendChild(studentAvatarEl(seed));
+    }
     function setAvatar(el, p) {
-      el.textContent = initials(p);
+      setAvatarBySeed(el, (p && (p.uid || fullName(p))) || 'student');
     }
 
     function showPeopleView(name) {
@@ -1881,7 +1968,7 @@
 
         const av = document.createElement('div');
         av.className = 'profile-avatar profile-avatar-small';
-        av.textContent = initialsFromName(otherName);
+        setAvatarBySeed(av, otherUid || otherName);
 
         const info = document.createElement('div');
         info.className = 'people-card-info';
@@ -1942,7 +2029,7 @@
       chatInput.style.height = 'auto';
       chatMessagesEl.textContent = 'Loading…';
       document.getElementById('chat-name').textContent = currentChat.otherName;
-      document.getElementById('chat-avatar').textContent = initialsFromName(currentChat.otherName);
+      setAvatarBySeed(document.getElementById('chat-avatar'), currentChat.otherUid || currentChat.otherName);
       showPeopleView('chat');
       // showPeopleView('chat') doesn't stop listeners, but re-assert currentChat to be safe
       const thisChat = currentChat;
