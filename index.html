@@ -189,6 +189,12 @@
           </div>
         </div>
 
+        <div class="avatar-gender-row">
+          <span class="avatar-gender-label">Avatar style:</span>
+          <button type="button" class="avatar-gender-btn" id="pm-gender-male" data-gender="male">♂ Male</button>
+          <button type="button" class="avatar-gender-btn" id="pm-gender-female" data-gender="female">♀ Female</button>
+        </div>
+
         <h4 class="profile-section-title">Badges</h4>
         <div id="pm-badges" class="badges-row"></div>
 
@@ -871,9 +877,9 @@
         </div>
       </details>
 
+</section>
+
 <!-- COMMUNITY DOCUMENTS SECTION -->
-    
-    <!-- COMMUNITY DOCUMENTS SECTION -->
 <section class="documents-section" id="community-documents">
   <div class="section-heading">
     <span class="section-kicker">Shared by students</span>
@@ -884,6 +890,17 @@
       research papers, and more.
     </p>
   </div>
+
+  <details class="tronc-commun" id="community-collapse">
+    <summary class="tronc-commun-summary">
+      <div>
+        <span class="semester-number">📁</span>
+        <h3>Browse Document Categories</h3>
+      </div>
+      <span class="tronc-commun-chevron" aria-hidden="true">▾</span>
+    </summary>
+
+    <div class="tronc-commun-body">
 
   <div class="documents-grid">
 
@@ -960,6 +977,9 @@
   Upload a document
 </a>
   </div>
+
+    </div>
+  </details>
 </section>
 <!-- PROFESSORS SECTION -->
 <section class="documents-section prof-section" id="professors">
@@ -1029,7 +1049,7 @@
       </div>
 
       <div class="founder-info">
-        <span class="founder-role">CO-FOUNDER</span>
+        <span class="founder-role">CO-FOUNDER · THE BRAIN & DIGITAL LEAD</span>
 
         <h3>Zakaria Belkhair</h3>
 
@@ -1039,8 +1059,9 @@
 
         <p>
           Physics student at Faculté Polydisciplinaire de Larache and
-          co-founder of FP Library, working on the platform's academic
-          structure, resources, and development.
+          co-founder of FP Library. Zakaria is the driving force behind the
+          project — leading its academic structure, features, and overall
+          digital direction.
           zakaria.belkhair@etu.uae.ac.ma
         </p>
       </div>
@@ -1052,14 +1073,11 @@
     <article class="founder-card">
 
       <div class="founder-photo">
-        <img
-      <img src="./mohamed.png.jpeg" alt="Elmrabt Mohamed">
-          alt="Elmrabt Mohamed"
-        >
+        <img src="./mohamed.png.jpeg" alt="Elmrabt Mohamed">
       </div>
 
       <div class="founder-info">
-        <span class="founder-role">CO-FOUNDER</span>
+        <span class="founder-role">CO-FOUNDER · SUPPORT</span>
 
         <h3>Elmrabet Mohamed</h3>
 
@@ -1068,8 +1086,9 @@
         </p>
 
         <p>
-          Computer Science student and co-founder of FP Library, contributing
-          to the technical development and digital side of the project.
+          Computer Science student and co-founder of FP Library, supporting
+          the project with technical help and contributions on the side of
+          development.
           mohamada2007el@gmail.com
         </p>
       </div>
@@ -1688,8 +1707,9 @@
     const viewInbox = document.getElementById('people-view-inbox');
     const viewChat = document.getElementById('people-view-chat');
     const pmBio = document.getElementById('pm-bio');
-    let peopleCache = null; // [{uid, firstName, lastName, year, bio, avatarSeed}]
+    let peopleCache = null; // [{uid, firstName, lastName, year, bio, avatarSeed, avatarGender}]
     let myAvatarSeed = null; // current user's avatar look, editable via "New look" shuffle button
+    let myAvatarGender = null; // 'male' | 'female' | null (no preference — full random pool)
 
     function randomAvatarSeed() {
       return Math.random().toString(36).slice(2) + Date.now().toString(36);
@@ -2068,7 +2088,7 @@
     }
 
     // ----- Imaginary student avatar (unique look per person, no photos needed) -----
-    function studentAvatarEl(seed) {
+    function studentAvatarEl(seed, gender) {
       const key = (seed || 'student').toString().toLowerCase();
       let h = 5381;
       for (let i = 0; i < key.length; i++) h = ((h << 5) + h + key.charCodeAt(i)) >>> 0;
@@ -2078,7 +2098,10 @@
       const hair = pick(['#2b2b2f', '#5b3a29', '#a5673f', '#e8b923', '#c94f4f'], 3);
       const hoodie = pick(['#3a86ff', '#ff6b6b', '#49f2c2', '#8b7cff', '#ffcf5c', '#2c3e66'], 6);
       const accent = pick(['#f4f1e8', '#1c1c22', '#ffcf5c', '#66d9ff'], 9);
-      const hairStyle = (h >>> 12) % 4;    // 0 short, 1 messy/wavy, 2 ponytail, 3 buzzed
+      // Hairstyle pool: 0 short, 1 messy/wavy, 2 ponytail, 3 buzzed.
+      // A chosen avatar style narrows the pool; with no preference, all four stay in play.
+      const hairPool = gender === 'male' ? [0, 3] : gender === 'female' ? [1, 2] : [0, 1, 2, 3];
+      const hairStyle = hairPool[(h >>> 12) % hairPool.length];
       const glasses = (h >>> 15) % 3;      // 0 none, 1 round, 2 square
       const hasFreckles = (h >>> 17) % 3 === 0;
       const headwear = (h >>> 19) % 3;     // 0 none, 1 beanie, 2 headphones
@@ -2150,12 +2173,12 @@
       return span;
     }
 
-    function setAvatarBySeed(el, seed) {
+    function setAvatarBySeed(el, seed, gender) {
       el.textContent = '';
-      el.appendChild(studentAvatarEl(seed));
+      el.appendChild(studentAvatarEl(seed, gender));
     }
     function setAvatar(el, p) {
-      setAvatarBySeed(el, (p && (p.avatarSeed || p.uid || fullName(p))) || 'student');
+      setAvatarBySeed(el, (p && (p.avatarSeed || p.uid || fullName(p))) || 'student', p && p.avatarGender);
     }
 
     function showPeopleView(name) {
@@ -2174,19 +2197,32 @@
     }
 
     // ----- My profile -----
+    function updateGenderButtons() {
+      document.getElementById('pm-gender-male').classList.toggle('is-selected', myAvatarGender === 'male');
+      document.getElementById('pm-gender-female').classList.toggle('is-selected', myAvatarGender === 'female');
+    }
+
     function updateMyPreview() {
       const p = {
         firstName: document.getElementById('pm-firstname').value.trim(),
         lastName: document.getElementById('pm-lastname').value.trim()
       };
-      setAvatarBySeed(document.getElementById('pm-avatar'), myAvatarSeed || (auth.currentUser && auth.currentUser.uid) || 'student');
+      setAvatarBySeed(document.getElementById('pm-avatar'), myAvatarSeed || (auth.currentUser && auth.currentUser.uid) || 'student', myAvatarGender);
       document.getElementById('pm-preview-name').textContent = fullName(p);
       const y = document.getElementById('pm-year').value;
       document.getElementById('pm-preview-year').textContent = y;
       document.getElementById('pm-preview-year').hidden = !y;
       document.getElementById('pm-bio-count').textContent = pmBio.value.length;
+      updateGenderButtons();
       renderMyBadges();
     }
+
+    document.querySelectorAll('.avatar-gender-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        myAvatarGender = myAvatarGender === btn.dataset.gender ? null : btn.dataset.gender;
+        updateMyPreview();
+      });
+    });
 
     function openMyProfile() {
       const user = auth.currentUser;
@@ -2207,6 +2243,7 @@
         document.getElementById('pm-year').value = pub.year || priv.year || '';
         pmBio.value = pub.bio || '';
         myAvatarSeed = pub.avatarSeed || user.uid;
+        myAvatarGender = pub.avatarGender || null;
         myBadges = pub.badges || myBadges || {};
         updateMyPreview();
       }).catch(function (err) {
@@ -2241,7 +2278,8 @@
         lastName: document.getElementById('pm-lastname').value.trim(),
         year: document.getElementById('pm-year').value,
         bio: pmBio.value.trim().slice(0, 300),
-        avatarSeed: myAvatarSeed || user.uid
+        avatarSeed: myAvatarSeed || user.uid,
+        avatarGender: myAvatarGender || null
       };
 
       btn.disabled = true;
@@ -3068,6 +3106,30 @@
       document.querySelector('#prof-modal .auth-modal-box').scrollTop = 0;
     }
 
+    function toggleReviewLike(review) {
+      const user = auth.currentUser;
+      if (!user) { openAuthModal('signin'); return; }
+
+      const likedBy = review.likedBy || [];
+      const alreadyLiked = likedBy.indexOf(user.uid) !== -1;
+
+      // Optimistic local update so the UI feels instant
+      review.likedBy = alreadyLiked
+        ? likedBy.filter(function (id) { return id !== user.uid; })
+        : likedBy.concat([user.uid]);
+      renderProfDetail();
+
+      db.collection('professorReviews').doc(review.id).update({
+        likedBy: alreadyLiked
+          ? firebase.firestore.FieldValue.arrayRemove(user.uid)
+          : firebase.firestore.FieldValue.arrayUnion(user.uid)
+      }).catch(function () {
+        // Revert on failure
+        review.likedBy = likedBy;
+        renderProfDetail();
+      });
+    }
+
     function renderProfDetail() {
       const prof = profState.professors.filter(function (p) { return p.id === currentProfId; })[0];
       if (!prof) return;
@@ -3157,6 +3219,17 @@
         const when = document.createElement('span');
         when.textContent = new Date(tsMs(r.createdAt)).toLocaleDateString([], { day: 'numeric', month: 'short', year: 'numeric' });
         meta.appendChild(when);
+
+        const likeBtn = document.createElement('button');
+        likeBtn.type = 'button';
+        likeBtn.className = 'review-like-btn';
+        const likedBy = r.likedBy || [];
+        const myUid = auth.currentUser ? auth.currentUser.uid : null;
+        const iLiked = myUid && likedBy.indexOf(myUid) !== -1;
+        likeBtn.classList.toggle('is-liked', !!iLiked);
+        likeBtn.innerHTML = (iLiked ? '❤️' : '🤍') + ' <span>' + likedBy.length + '</span>';
+        likeBtn.addEventListener('click', function () { toggleReviewLike(r); });
+        meta.appendChild(likeBtn);
 
         if (!isMine) {
           const rep = document.createElement('button');
