@@ -1706,6 +1706,7 @@ h4 {
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
   border-radius: 50%;
   background: linear-gradient(135deg, var(--accent), var(--accent-two));
   color: #050816;
@@ -1713,6 +1714,13 @@ h4 {
   font-size: 1.2rem;
   font-weight: 700;
   letter-spacing: 0.5px;
+}
+
+.student-avatar-svg,
+.student-avatar-svg svg {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 .profile-avatar-large {
