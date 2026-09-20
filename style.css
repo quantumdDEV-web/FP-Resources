@@ -690,6 +690,12 @@ h4 {
   font-weight: 600;
 }
 
+.badge-chip--admin {
+  border-color: rgba(102, 217, 255, 0.55);
+  background: rgba(102, 217, 255, 0.12);
+  color: var(--accent);
+}
+
 .badges-empty {
   color: var(--muted);
   font-size: 0.82rem;
@@ -2546,9 +2552,9 @@ h4 {
   width: 60px;
   height: 60px;
   overflow: hidden;
-  border: 2px solid #d9c9a5;
-  border-radius: 14px;
-  background: radial-gradient(circle at 50% 22%, #f1ead6, #b7ac92);
+  border: 2px solid rgba(255, 255, 255, 0.55);
+  border-radius: 50%;
+  background: #1b2340;
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35);
 }
 
@@ -2556,7 +2562,7 @@ h4 {
   width: 96px;
   height: 96px;
   border-width: 3px;
-  border-radius: 16px;
+  border-radius: 50%;
 }
 
 .prof-avatar-svg,
@@ -2718,6 +2724,35 @@ h4 {
 
 .prof-board .prof-count {
   color: rgba(244, 241, 232, 0.7);
+}
+
+.prof-gender-row {
+  display: flex;
+  gap: 8px;
+  margin: 2px 0 14px;
+}
+
+.prof-gender-btn {
+  padding: 8px 20px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font-family: "Inter", sans-serif;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+}
+
+.prof-gender-btn:hover {
+  border-color: rgba(102, 217, 255, 0.5);
+  color: var(--text);
+}
+
+.prof-gender-btn.is-selected {
+  border-color: var(--accent);
+  background: rgba(102, 217, 255, 0.12);
+  color: var(--accent);
 }
 
 .pa-preview {
