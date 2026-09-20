@@ -1589,6 +1589,22 @@
       const b = (p.lastName || '').charAt(0);
       return ((a + b).toUpperCase()) || '?';
     }
+    // ----- Anonymous reviewer avatar (deliberately generic — never the real student's look) -----
+    function anonAvatarEl() {
+      const svg = '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">'
+        + '<circle cx="50" cy="50" r="50" fill="#3a3a44"/>'
+        + '<rect x="22" y="44" width="22" height="15" rx="7" fill="#1c1c22" stroke="#c9c9d2" stroke-width="3"/>'
+        + '<rect x="56" y="44" width="22" height="15" rx="7" fill="#1c1c22" stroke="#c9c9d2" stroke-width="3"/>'
+        + '<path d="M44 49 L56 49" stroke="#c9c9d2" stroke-width="3"/>'
+        + '<path d="M18 46 Q50 28 82 46" stroke="#c9c9d2" stroke-width="3.5" fill="none" stroke-linecap="round"/>'
+        + '<path d="M32 78 Q50 70 68 78" stroke="#c9c9d2" stroke-width="3" fill="none" stroke-linecap="round"/>'
+        + '</svg>';
+      const span = document.createElement('span');
+      span.className = 'student-avatar-svg';
+      span.innerHTML = svg;
+      return span;
+    }
+
     // ----- Imaginary student avatar (unique look per person, no photos needed) -----
     function studentAvatarEl(seed) {
       const key = (seed || 'student').toString().toLowerCase();
@@ -2618,8 +2634,29 @@
 
       reviews.forEach(function (r) {
         const isMine = mine && mine.id === r.id;
+        const isAnon = r.anonymous || !r.authorId;
+        const ap = !isAnon ? profState.profiles[r.authorId] : null;
+
         const card = document.createElement('article');
         card.className = 'review-card' + (isMine ? ' is-mine' : '');
+
+        const top = document.createElement('div');
+        top.className = 'review-top';
+
+        const av = document.createElement('div');
+        av.className = 'profile-avatar review-avatar';
+        if (isAnon) {
+          av.appendChild(anonAvatarEl());
+        } else {
+          setAvatar(av, ap || {});
+        }
+
+        const info = document.createElement('div');
+        info.className = 'review-top-info';
+        const author = document.createElement('strong');
+        author.className = 'review-author';
+        author.textContent = isAnon ? 'Anonymous student' : (ap ? fullName(ap) : 'Student');
+        info.appendChild(author);
 
         const head = document.createElement('div');
         head.className = 'review-head';
@@ -2630,6 +2667,10 @@
           badge.textContent = 'Your review';
           head.appendChild(badge);
         }
+        info.appendChild(head);
+
+        top.appendChild(av);
+        top.appendChild(info);
 
         const text = document.createElement('p');
         text.className = 'review-text';
@@ -2637,16 +2678,8 @@
 
         const meta = document.createElement('div');
         meta.className = 'review-meta';
-        const who = document.createElement('span');
-        if (r.anonymous || !r.authorId) {
-          who.textContent = 'Anonymous student';
-        } else {
-          const ap = profState.profiles[r.authorId];
-          who.textContent = ap ? fullName(ap) : 'Student';
-        }
         const when = document.createElement('span');
-        when.textContent = '· ' + new Date(tsMs(r.createdAt)).toLocaleDateString([], { day: 'numeric', month: 'short', year: 'numeric' });
-        meta.appendChild(who);
+        when.textContent = new Date(tsMs(r.createdAt)).toLocaleDateString([], { day: 'numeric', month: 'short', year: 'numeric' });
         meta.appendChild(when);
 
         if (!isMine) {
@@ -2658,7 +2691,7 @@
           meta.appendChild(rep);
         }
 
-        card.appendChild(head);
+        card.appendChild(top);
         card.appendChild(text);
         card.appendChild(meta);
         list.appendChild(card);
