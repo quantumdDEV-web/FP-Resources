@@ -1549,15 +1549,56 @@ h4 {
   width: 100%;
   box-sizing: border-box;
 }
+/* Logo: developer / terminal style */
 .logo {
   display: inline-flex;
   align-items: center;
-  gap: 9px;
-  font-family: "Space Grotesk", sans-serif;
-  font-size: 1.3rem;
-  font-weight: 800;
-  letter-spacing: 1px;
+  gap: 10px;
+  padding: 6px 14px 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: rgba(102, 217, 255, 0.05);
+  font-family: "JetBrains Mono", "Fira Code", ui-monospace, Consolas, monospace;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.3px;
   white-space: nowrap;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.logo:hover {
+  border-color: rgba(102, 217, 255, 0.55);
+  background: rgba(102, 217, 255, 0.09);
+}
+
+.logo:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.logo-prompt {
+  margin-right: 1px;
+  color: var(--accent-three);
+  font-weight: 500;
+}
+
+.logo-cursor {
+  display: inline-block;
+  width: 0.55em;
+  height: 1.05em;
+  margin-left: 4px;
+  vertical-align: -0.18em;
+  border-radius: 1px;
+  background: var(--accent);
+  animation: logo-blink 1.1s steps(1) infinite;
+}
+
+@keyframes logo-blink {
+  50% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .logo-cursor { animation: none; }
 }
 
 .logo img {
@@ -1600,179 +1641,6 @@ h4 {
     grid-template-columns: 1fr;
   }
 }
-/* ==============================
-   FOUNDERS SECTION
-   ============================== */
-
-.founders-section {
-  padding: 100px 0;
-}
-
-.founders-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 24px;
-  margin-top: 45px;
-}
-
-.founder-card {
-  display: flex;
-  align-items: center;
-  gap: 28px;
-  padding: 28px;
-  background: rgba(15, 25, 50, 0.75);
-  border: 1px solid rgba(120, 160, 220, 0.15);
-  border-radius: 18px;
-  box-sizing: border-box;
-}
-
-.founder-photo {
-  width: 145px;
-  height: 145px;
-  flex: 0 0 145px;
-  border-radius: 50%;
-  overflow: hidden;
-  border: 2px solid rgba(70, 200, 255, 0.35);
-}
-
-.founder-photo img {
-  width: 100%;
-  height: 100%;
-  display: block;
-  object-fit: cover;
-}
-
-.founder-info {
-  flex: 1;
-}
-
-.founder-role {
-  display: inline-block;
-  margin-bottom: 8px;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  color: #4ddcff;
-}
-
-.founder-info h3 {
-  margin: 0 0 6px;
-  font-size: 1.45rem;
-}
-
-.founder-study {
-  margin: 0 0 14px;
-  font-weight: 600;
-  opacity: 0.8;
-}
-
-.founder-info p:last-child {
-  margin: 0;
-  line-height: 1.7;
-  opacity: 0.75;
-}
-
-
-/* ==============================
-   FUTURE VISION
-   ============================== */
-
-.founders-vision {
-  margin-top: 55px;
-  padding: 45px;
-  border-radius: 20px;
-  background: rgba(15, 25, 50, 0.55);
-  border: 1px solid rgba(120, 160, 220, 0.15);
-}
-
-.founders-vision h3 {
-  margin: 12px 0 16px;
-  font-size: 2rem;
-  line-height: 1.25;
-}
-
-.founders-vision > p {
-  max-width: 850px;
-  line-height: 1.8;
-  opacity: 0.75;
-}
-
-.vision-points {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 16px;
-  margin-top: 35px;
-}
-
-.vision-points div {
-  padding: 20px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.025);
-  border: 1px solid rgba(120, 160, 220, 0.1);
-}
-
-.vision-points strong {
-  display: block;
-  margin-bottom: 10px;
-  color: #4ddcff;
-  font-size: 0.8rem;
-}
-
-.vision-points span {
-  display: block;
-  line-height: 1.5;
-  font-size: 0.9rem;
-}
-
-
-/* ==============================
-   MOBILE
-   ============================== */
-
-@media (max-width: 900px) {
-
-  .founders-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .vision-points {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-}
-
-@media (max-width: 600px) {
-
-  .founders-section {
-    padding: 70px 0;
-  }
-
-  .founder-card {
-    flex-direction: column;
-    text-align: center;
-    padding: 30px 22px;
-  }
-
-  .founder-photo {
-    width: 125px;
-    height: 125px;
-    flex-basis: 125px;
-  }
-
-  .founders-vision {
-    padding: 30px 22px;
-  }
-
-  .founders-vision h3 {
-    font-size: 1.5rem;
-  }
-
-  .vision-points {
-    grid-template-columns: 1fr;
-  }
-}
-
-
 /* =========================================
    Profiles: My Profile / Students directory
    ========================================= */
