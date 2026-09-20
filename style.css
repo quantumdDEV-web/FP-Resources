@@ -643,6 +643,58 @@ h4 {
   font-size: 1.1rem;
 }
 
+/* ---- Badges: toast + chips ---- */
+.badge-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  border: 1px solid rgba(73, 242, 194, 0.4);
+  border-radius: 999px;
+  background: #10151f;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  font-size: 0.88rem;
+  transform: translate(-50%, 24px);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.badge-toast.is-visible {
+  transform: translate(-50%, 0);
+  opacity: 1;
+}
+
+.badge-toast-icon {
+  font-size: 1.3rem;
+}
+
+.badges-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 6px 0 18px;
+}
+
+.badge-chip {
+  padding: 5px 12px;
+  border: 1px solid rgba(255, 207, 92, 0.35);
+  border-radius: 999px;
+  background: rgba(255, 207, 92, 0.08);
+  color: #ffcf5c;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.badges-empty {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
 .auth-error {
   margin-top: 12px;
   color: #ff8a8a;
