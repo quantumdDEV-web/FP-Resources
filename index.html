@@ -39,6 +39,8 @@
   <a href="#professors">Professors</a>
   <a href="#system-info">About</a>
 
+  <button type="button" id="nav-legal-btn" class="nav-auth-btn">Terms &amp; Privacy</button>
+
   <a
     href="https://forms.gle/78UAAse7nTD7gnFK6"
     target="_blank"
@@ -60,6 +62,91 @@
 </nav>
     </div>
   </header>
+
+  <!-- Legal Sidebar: Terms of Use & Data Privacy -->
+  <div id="legal-sidebar" class="legal-sidebar" aria-hidden="true">
+    <div class="legal-sidebar-backdrop" data-close-legal></div>
+    <aside class="legal-sidebar-panel" role="dialog" aria-modal="true" aria-labelledby="legal-sidebar-title">
+      <div class="legal-sidebar-header">
+        <h2 id="legal-sidebar-title">Terms &amp; Data Privacy</h2>
+        <button type="button" class="legal-sidebar-close" data-close-legal aria-label="Close">×</button>
+      </div>
+
+      <nav class="legal-sidebar-tabs" aria-label="Legal sections">
+        <button type="button" class="legal-tab-btn active" data-legal-tab="terms">Conditions of Use</button>
+        <button type="button" class="legal-tab-btn" data-legal-tab="privacy">Data Privacy</button>
+      </nav>
+
+      <div class="legal-sidebar-body">
+        <section id="legal-tab-terms" class="legal-tab-panel active">
+          <h3>Conditions of Utilisation</h3>
+          <p><em>Last updated: September 2026</em></p>
+
+          <h4>1. Purpose of the Platform</h4>
+          <p>FP Library is an independent, student-built resource library created to help Physics students at Faculté Polydisciplinaire de Larache share notes, exercises, exams, reports, and other academic documents. It is not an official service of the university.</p>
+
+          <h4>2. Acceptable Use</h4>
+          <p>By using this site you agree to:</p>
+          <ul>
+            <li>Only upload content you have the right to share (your own notes, or materials you are permitted to redistribute).</li>
+            <li>Use the documents and community features for personal academic purposes only.</li>
+            <li>Not upload harmful, offensive, defamatory, or illegal content.</li>
+            <li>Not attempt to impersonate another student, professor, or staff member.</li>
+            <li>Not use the messaging or review features to harass, spam, or misrepresent facts about other users or professors.</li>
+          </ul>
+
+          <h4>3. Accounts</h4>
+          <p>You are responsible for the security of your account and for any activity carried out under it. Accounts may be suspended if these conditions are violated.</p>
+
+          <h4>4. Content Ownership &amp; Removal</h4>
+          <p>Uploaders retain ownership of the documents they share. FP Library may remove any content, review, or account at its discretion, for example in response to a copyright or conduct complaint.</p>
+
+          <h4>5. No Warranty</h4>
+          <p>Documents and information (including professor reviews) are provided "as is" by the community. FP Library does not guarantee their accuracy, completeness, or fitness for any particular exam or course requirement.</p>
+
+          <h4>6. Changes to These Conditions</h4>
+          <p>These conditions may be updated from time to time. Continued use of the platform after changes are posted constitutes acceptance of the new conditions.</p>
+        </section>
+
+        <section id="legal-tab-privacy" class="legal-tab-panel">
+          <h3>Data Privacy</h3>
+          <p><em>Last updated: September 2026</em></p>
+
+          <h4>1. What We Collect</h4>
+          <ul>
+            <li><strong>Account data:</strong> your email address and any profile details you choose to add (name, avatar, bio).</li>
+            <li><strong>Content you share:</strong> uploaded documents, professor reviews, and messages sent through the platform.</li>
+            <li><strong>Usage data:</strong> basic interactions with the site needed to make features like messaging and the student directory work.</li>
+          </ul>
+
+          <h4>2. How We Use Your Data</h4>
+          <ul>
+            <li>To create and manage your account.</li>
+            <li>To let other students find you in the directory and message you, if you choose to appear there.</li>
+            <li>To display your reviews and uploaded content to other students.</li>
+            <li>To keep the platform secure and prevent abuse.</li>
+          </ul>
+
+          <h4>3. Who Can See Your Data</h4>
+          <p>Your profile information (name, avatar, bio) and any reviews you post are visible to other logged-in students. Your email address is not publicly displayed unless you choose to share it in a message.</p>
+
+          <h4>4. Data Storage</h4>
+          <p>Data is stored using the platform's backend services. We take reasonable steps to protect it, but as an independent student project, FP Library cannot guarantee the same level of security as a commercial service.</p>
+
+          <h4>5. Your Rights</h4>
+          <ul>
+            <li><strong>Access:</strong> you can review the personal data associated with your account at any time via "My Profile".</li>
+            <li><strong>Correction:</strong> you can edit your profile information whenever you like.</li>
+            <li><strong>Deletion:</strong> you may request that your account and associated data be deleted by contacting the site administrators.</li>
+            <li><strong>Withdrawal:</strong> you can stop using the platform at any time; you are not obligated to keep an account.</li>
+          </ul>
+
+          <h4>6. Contact</h4>
+          <p>For any question about your data or these conditions, please reach out through the upload/contact form linked in the navigation bar.</p>
+        </section>
+      </div>
+    </aside>
+  </div>
 
   <!-- Auth Modal -->
   <div id="auth-modal" class="auth-modal">
@@ -1279,6 +1366,47 @@
           card.querySelector('.favorite-star').textContent = '☆';
         });
       };
+    })();
+
+    // ---- Legal sidebar: Terms & Data Privacy ----
+    (function () {
+      const legalSidebar = document.getElementById('legal-sidebar');
+      const legalBtn = document.getElementById('nav-legal-btn');
+
+      function openLegalSidebar(tab) {
+        legalSidebar.classList.add('is-open');
+        legalSidebar.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+        setLegalTab(tab || 'terms');
+      }
+      function closeLegalSidebar() {
+        legalSidebar.classList.remove('is-open');
+        legalSidebar.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+      }
+      function setLegalTab(tab) {
+        document.querySelectorAll('.legal-tab-btn').forEach(function (btn) {
+          btn.classList.toggle('active', btn.dataset.legalTab === tab);
+        });
+        document.querySelectorAll('.legal-tab-panel').forEach(function (panel) {
+          panel.classList.toggle('active', panel.id === 'legal-tab-' + tab);
+        });
+      }
+
+      if (legalBtn) {
+        legalBtn.addEventListener('click', function () { openLegalSidebar('terms'); });
+      }
+      document.querySelectorAll('[data-close-legal]').forEach(function (el) {
+        el.addEventListener('click', closeLegalSidebar);
+      });
+      document.querySelectorAll('.legal-tab-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () { setLegalTab(btn.dataset.legalTab); });
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && legalSidebar.classList.contains('is-open')) {
+          closeLegalSidebar();
+        }
+      });
     })();
 
     // ---- Auth modal ----
