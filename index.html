@@ -21,6 +21,38 @@
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
+  <!-- Welcome Notification -->
+<div id="welcome-toast" class="welcome-toast" role="status" aria-live="polite">
+  <div class="welcome-toast-icon">🎓</div>
+  <div class="welcome-toast-body">
+    <p class="welcome-toast-title">Welcome to FP Library</p>
+    <p class="welcome-toast-text">Good luck with your academic year!</p>
+  </div>
+  <button type="button" class="welcome-toast-close" id="welcome-toast-close" aria-label="Close">×</button>
+</div>
+
+<script>
+  (function () {
+    const toast = document.getElementById('welcome-toast');
+    const closeBtn = document.getElementById('welcome-toast-close');
+    if (!toast) return;
+
+    // Show shortly after page load
+    setTimeout(function () {
+      toast.classList.add('is-visible');
+    }, 600);
+
+    function hideToast() {
+      toast.classList.remove('is-visible');
+      toast.classList.add('is-hiding');
+    }
+
+    closeBtn.addEventListener('click', hideToast);
+
+    // Auto-dismiss after 6 seconds
+    setTimeout(hideToast, 6600);
+  })();
+</script>
 
 <body>
 
