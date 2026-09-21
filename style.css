@@ -25,10 +25,12 @@
 
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 
 body {
   min-height: 100vh;
+  overflow-x: hidden;
   background:
     radial-gradient(circle at 15% 10%, rgba(65, 100, 255, 0.14), transparent 30%),
     radial-gradient(circle at 85% 20%, rgba(0, 210, 255, 0.09), transparent 25%),
@@ -174,16 +176,17 @@ a {
 .nav-account-trigger {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 7px 14px;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
   border: 1px solid var(--border);
-  border-radius: 999px;
+  border-radius: 50%;
   background: transparent;
   color: var(--text);
-  font-family: "Inter", sans-serif;
-  font-size: 0.82rem;
-  font-weight: 600;
   cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
   transition: border-color 0.25s ease, background 0.25s ease;
 }
 
@@ -193,27 +196,20 @@ a {
   background: var(--card-hover);
 }
 
-.nav-account-avatar {
-  font-size: 1rem;
-  line-height: 1;
-}
-
-.nav-account-chevron {
-  color: var(--muted);
-  transition: transform 0.2s ease;
-}
-
-.nav-account.is-open .nav-account-chevron {
-  transform: rotate(180deg);
-}
-
 .nav-account:has(#nav-messages-badge:not([hidden])) .nav-account-trigger::after {
   content: "";
-  width: 8px;
-  height: 8px;
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
   background: var(--accent-three);
-  margin-left: -2px;
+  border: 2px solid var(--background-light);
+}
+
+.nav-account-backdrop {
+  display: none;
 }
 
 .nav-account-menu {
@@ -221,6 +217,7 @@ a {
   top: calc(100% + 10px);
   right: 0;
   min-width: 220px;
+  max-width: calc(100vw - 32px);
   padding: 8px;
   border: 1px solid var(--border);
   border-radius: 14px;
@@ -233,7 +230,7 @@ a {
   visibility: hidden;
   transform: translateY(-8px);
   transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s;
-  z-index: 150;
+  z-index: 250;
 }
 
 .nav-account.is-open .nav-account-menu {
@@ -1192,8 +1189,33 @@ h4 {
   }
 
   .nav-account-menu {
-    right: auto;
-    left: 0;
+    position: fixed;
+    top: auto;
+    bottom: 16px;
+    left: 16px;
+    right: 16px;
+    max-width: none;
+    transform: translateY(12px);
+  }
+
+  .nav-account.is-open .nav-account-menu {
+    transform: translateY(0);
+  }
+
+  .nav-account-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(2, 4, 12, 0.6);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s;
+    z-index: 240;
+  }
+
+  .nav-account-backdrop.is-open {
+    opacity: 1;
+    visibility: visible;
   }
 
   .hero {
