@@ -32,14 +32,17 @@
   <span class="logo-text"><span class="logo-prompt">~/</span>fp<span class="accent">.</span>library<span class="logo-cursor" aria-hidden="true"></span></span>
 </a>
 
-   <nav class="nav-links" aria-label="Main navigation">
+   <div class="nav-right-group">
+<nav class="nav-links" aria-label="Main navigation">
   <a href="#home">Home</a>
   <a href="#archive">Archive</a>
   <a href="#community-documents">Community Documents</a>
   <a href="#professors">Professors</a>
   <a href="#system-info">About</a>
+</nav>
 
-  <button type="button" id="nav-legal-btn" class="nav-auth-btn">Terms &amp; Privacy</button>
+<div class="nav-actions">
+  <button type="button" id="nav-legal-btn" class="nav-link-subtle">Terms &amp; Privacy</button>
 
   <a
     href="https://forms.gle/78UAAse7nTD7gnFK6"
@@ -50,16 +53,29 @@
     Upload Document
   </a>
 
+  <span class="nav-divider" aria-hidden="true"></span>
+
   <button id="nav-login-btn" class="nav-auth-btn">Log In</button>
 
-  <div id="nav-user-badge" class="nav-user-badge" hidden>
-    <button id="nav-students-btn" class="nav-logout-btn">Students</button>
-    <button id="nav-messages-btn" class="nav-logout-btn">Messages<span id="nav-messages-badge" class="nav-badge" hidden>0</span></button>
-    <button id="nav-profile-btn" class="nav-logout-btn">My Profile</button>
-    <span id="nav-user-email"></span>
-    <button id="nav-logout-btn" class="nav-logout-btn">Log Out</button>
+  <div id="nav-user-badge" class="nav-account" hidden>
+    <button type="button" id="nav-account-trigger" class="nav-account-trigger" aria-haspopup="true" aria-expanded="false">
+      <span class="nav-account-avatar" aria-hidden="true">👤</span>
+      <span class="nav-account-label">Account</span>
+      <svg class="nav-account-chevron" width="10" height="6" viewBox="0 0 10 6" fill="none" aria-hidden="true">
+        <path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+
+    <div id="nav-account-menu" class="nav-account-menu" role="menu">
+      <div id="nav-user-email" class="nav-account-menu-email"></div>
+      <button id="nav-students-btn" class="nav-account-menu-item" role="menuitem">Students</button>
+      <button id="nav-messages-btn" class="nav-account-menu-item" role="menuitem">Messages<span id="nav-messages-badge" class="nav-badge" hidden>0</span></button>
+      <button id="nav-profile-btn" class="nav-account-menu-item" role="menuitem">My Profile</button>
+      <button id="nav-logout-btn" class="nav-account-menu-item nav-account-menu-item-danger" role="menuitem">Log Out</button>
+    </div>
   </div>
-</nav>
+</div>
+   </div>
     </div>
   </header>
 
@@ -1436,6 +1452,37 @@
     }
 
     loginBtn.addEventListener('click', function () { openAuthModal('signin'); });
+
+    // ---- Account dropdown (logged-in nav menu) ----
+    (function () {
+      const accountTrigger = document.getElementById('nav-account-trigger');
+      if (!accountTrigger) return;
+
+      function closeAccountMenu() {
+        userBadge.classList.remove('is-open');
+        accountTrigger.setAttribute('aria-expanded', 'false');
+      }
+      function toggleAccountMenu() {
+        const isOpen = userBadge.classList.toggle('is-open');
+        accountTrigger.setAttribute('aria-expanded', String(isOpen));
+      }
+
+      accountTrigger.addEventListener('click', function (e) {
+        e.stopPropagation();
+        toggleAccountMenu();
+      });
+      document.addEventListener('click', function (e) {
+        if (!userBadge.contains(e.target)) closeAccountMenu();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closeAccountMenu();
+      });
+      // Close the dropdown once any menu item is clicked (the item's own
+      // handler, wired up elsewhere, still fires normally).
+      document.querySelectorAll('.nav-account-menu-item').forEach(function (btn) {
+        btn.addEventListener('click', closeAccountMenu);
+      });
+    })();
 
     // Robust close handling: backdrop click, X button, and Escape key
     document.querySelectorAll('[data-close-modal]').forEach(function (el) {
