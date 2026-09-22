@@ -57,6 +57,9 @@
 <body>
 
   <!-- Navigation -->
+  <!-- Campus photo band: sits full-width behind the header/hero. Replace campus-photo.jpg in the project folder once available. -->
+  <div class="hero-photo-band" aria-hidden="true"></div>
+
   <header class="navbar">
     <div class="nav-container">
      <a href="#home" class="logo" aria-label="FP Library home">
@@ -489,11 +492,6 @@
         </div>
 
       </div>
-
-    <!-- Hero photo: replace the src below with your campus photo once it's uploaded to the project folder -->
-    <div class="hero-photo-wrap" aria-hidden="false">
-      <img class="hero-photo" src="campus-photo.jpg" alt="Students on campus at Faculté Polydisciplinaire de Larache" loading="lazy" />
-    </div>
 
     <div class="physics-visual" aria-hidden="true">
   <div class="glow-orb orb-one"></div>
@@ -1043,29 +1041,31 @@
 <!-- COURSE DIFFICULTY SECTION -->
 <section class="documents-section" id="course-difficulty">
   <div class="section-heading">
-    <span class="section-kicker">Plan your semester</span>
-    <h2>See How Hard Your Courses Are</h2>
+    <span class="section-kicker">Planifiez votre semestre</span>
+    <h2>Découvrez la difficulté de vos modules</h2>
     <p>
-      A quick, at-a-glance look at how demanding each course tends to be, based on
-      general student consensus gathered from the community and public study-forum
-      discussions — alongside how necessary each course is for your degree and how
-      much priority it deserves in your study time. Treat this as a starting point,
-      not an exact science.
+      Un aperçu rapide de tous les modules du Tronc Commun Physique (S1–S4) :
+      difficulté ressentie, nécessité pour la suite du cursus, et priorité
+      d'étude conseillée. Cliquez sur un semestre dans le menu pour l'ouvrir,
+      puis sur « Découvrir » pour accéder directement aux ressources du module.
+      Ce sont des estimations de départ — à ajuster avec les retours de la communauté.
     </p>
   </div>
 
-  <div class="course-chart-card">
-    <div class="course-chart-legend">
-      <span class="legend-item"><span class="legend-dot legend-dot-difficulty"></span>Difficulty</span>
-      <span class="legend-item"><span class="legend-dot legend-dot-necessity"></span>Necessity</span>
-      <span class="legend-item"><span class="legend-dot legend-dot-priority"></span>Priority</span>
-    </div>
-    <div id="course-chart" class="course-chart" role="img" aria-label="Bar chart comparing difficulty, necessity and priority for each course"></div>
-    <p class="course-chart-note">
-      Scores are out of 10. Difficulty and necessity are informed by common student
-      discussion of the Physics program; Priority is a suggested balance of the two
-      (harder + more necessary courses get study-time priority first).
-    </p>
+  <div class="course-layout">
+    <aside class="course-sidebar" aria-label="Semestres">
+      <h3>Semestres</h3>
+      <nav class="course-sidebar-nav" id="course-sidebar-nav"></nav>
+
+      <div class="course-sidebar-legend">
+        <span class="legend-item"><span class="legend-dot legend-dot-difficulty"></span>Difficulté</span>
+        <span class="legend-item"><span class="legend-dot legend-dot-necessity"></span>Nécessité</span>
+        <span class="legend-item"><span class="legend-dot legend-dot-priority"></span>Priorité</span>
+      </div>
+      <p class="course-chart-note">Scores sur 10.</p>
+    </aside>
+
+    <div class="course-chart-card" id="course-chart-card"></div>
   </div>
 </section>
 
@@ -2744,59 +2744,128 @@
     });
 
     // =====================================================
-    // ---- Course difficulty chart ----
-    // Illustrative scores (0-10) based on general student consensus.
-    // Update this list any time with real survey data from the community.
+    // ---- Course difficulty chart: all Tronc Commun Physique modules (S1-S4) ----
+    // Difficulty / necessity / priority are illustrative starting scores (0-10),
+    // based on general student consensus — adjust freely as real feedback comes in.
+    // Links reuse the same Drive folders as the Tronc Commun archive above.
     // =====================================================
     const courseDifficultyData = [
-      { name: 'Quantum Mechanics',        difficulty: 9, necessity: 9, priority: 9 },
-      { name: 'Electromagnetism',         difficulty: 8, necessity: 9, priority: 9 },
-      { name: 'Analytical Mechanics',     difficulty: 8, necessity: 8, priority: 8 },
-      { name: 'Thermodynamics',           difficulty: 6, necessity: 7, priority: 6 },
-      { name: 'Mathematical Methods',     difficulty: 7, necessity: 9, priority: 8 },
-      { name: 'Optics',                   difficulty: 5, necessity: 6, priority: 5 },
-      { name: 'Electronics (TP)',         difficulty: 6, necessity: 6, priority: 5 },
-      { name: 'Numerical Methods',        difficulty: 6, necessity: 5, priority: 5 },
-      { name: 'English / Languages',      difficulty: 3, necessity: 5, priority: 3 }
+      { semester: 'Semestre 1', modules: [
+        { name: 'Algèbre 1',        difficulty: 6, necessity: 8, priority: 7, link: 'https://drive.google.com/drive/folders/1wQm03i9L7dIPj3YEIFK1J7shXyn_99Qd?usp=drive_link' },
+        { name: 'Analyse 1',        difficulty: 7, necessity: 9, priority: 8, link: 'https://drive.google.com/drive/folders/1mlQrf7zOvqagcRf176zOoXv5LH5QFdje?usp=sharing' },
+        { name: 'Thermodynamique',  difficulty: 6, necessity: 7, priority: 6, link: 'https://drive.google.com/drive/folders/1g3mn3aBkv_dBIXsIl-VwdveJX8AVK0Mt?usp=sharing' },
+        { name: 'Mécanique du point', difficulty: 7, necessity: 8, priority: 8, link: 'https://drive.google.com/drive/folders/1taFx2BHieqVoRj0LzUbsldAX88kxrq7g?usp=sharing' },
+        { name: 'Atomistique',      difficulty: 5, necessity: 6, priority: 5, link: 'https://drive.google.com/drive/folders/1ib6ZWbGkLDNKg2Jy4-0pAacE0zYRBMLj?usp=drive_link' },
+        { name: 'Thermochimie',     difficulty: 5, necessity: 5, priority: 4, link: 'https://drive.google.com/drive/folders/1hmUfK-C5WCi9mtplAKdYapuvhj9eAOLo?usp=sharing' }
+      ]},
+      { semester: 'Semestre 2', modules: [
+        { name: 'Algèbre 2',            difficulty: 7, necessity: 8, priority: 7, link: 'https://drive.google.com/drive/folders/1tIlZHLcDmfpLLmNmy1Yfv4il7192EMAw?usp=sharing' },
+        { name: 'Électricité',          difficulty: 7, necessity: 8, priority: 8, link: 'https://drive.google.com/drive/folders/1wWJXYqXza9mn2gFmTl3PmjXApuYPTdZI?usp=sharing' },
+        { name: 'Liaison chimique',     difficulty: 5, necessity: 5, priority: 4, link: 'https://drive.google.com/drive/folders/17G5o8gV_KQDZCpW4OmG3GrfIvkhFq6EU?usp=sharing' },
+        { name: 'Chimie en solution',   difficulty: 5, necessity: 5, priority: 4, link: 'https://drive.google.com/drive/folders/197LjVromZ_bji2IRsJ8tJGZmyZVJxrQ9?usp=sharing' },
+        { name: 'Optique géométrique',  difficulty: 6, necessity: 7, priority: 6, link: 'https://drive.google.com/drive/folders/174KvNu3PkxmLfmoUBbn3NZWR0RcQmw57?usp=sharing' },
+        { name: 'Digital Skills & IA',  difficulty: 3, necessity: 5, priority: 3, link: 'https://drive.google.com/drive/folders/1lewfmQLWu1YySa7fasf_0RIQryeH0a-H?usp=sharing' },
+        { name: 'Analyse 2',            difficulty: 8, necessity: 9, priority: 8, link: 'https://drive.google.com/drive/folders/1YvH4qfGIuY9vkThRq0_UhKozS-63c48e?usp=drive_link' }
+      ]},
+      { semester: 'Semestre 3', modules: [
+        { name: 'Mathématiques pour la Physique',        difficulty: 8, necessity: 9, priority: 9, link: 'https://drive.google.com/drive/folders/1FqF1xYtkUNrm2zN2Mbaq6HNKhhiIylE0?usp=sharing' },
+        { name: 'Électromagnétisme',                     difficulty: 9, necessity: 9, priority: 9, link: 'https://drive.google.com/drive/folders/1FBsZP0pkZ9EhEr59XtDQLWLjSmnqhG1S?usp=sharing' },
+        { name: 'Algorithmique et Programmation Python',  difficulty: 6, necessity: 6, priority: 5, link: 'https://drive.google.com/drive/folders/15Pihl2N0kSkFUxWWVuuF7gbcMlr-qEXl?usp=sharing' },
+        { name: 'Mécanique du Solide',                    difficulty: 7, necessity: 7, priority: 7, link: 'https://drive.google.com/drive/folders/1_wn1aKY7G-SpRLbAb84UN6L5oGDNIXKr?usp=sharing' },
+        { name: 'Circuits Électriques',                   difficulty: 6, necessity: 6, priority: 6, link: 'https://drive.google.com/drive/folders/1hkeD49iwctD1tuQP7K_WPGrGxjZ6H9r3?usp=sharing' },
+        { name: 'Français',                               difficulty: 3, necessity: 4, priority: 2, link: 'YOUR_GOOGLE_DRIVE_LINK_M06_HERE' },
+        { name: 'Thermodynamique 2',                      difficulty: 6, necessity: 6, priority: 5, link: 'https://drive.google.com/drive/folders/1NiHSTZiRYpfTqDq0fq2gdpDey15t9PzL?usp=sharing' }
+      ]},
+      { semester: 'Semestre 4', modules: [
+        { name: 'Analyse Numérique',            difficulty: 6, necessity: 6, priority: 5, link: 'https://drive.google.com/drive/folders/15NAHK9_pzu8g2LvBWnAJtI6i-dWHwhm6?usp=sharing' },
+        { name: 'Cristallographie Géométrique', difficulty: 6, necessity: 5, priority: 4, link: 'https://drive.google.com/drive/folders/1aXTTly1A77XepH0rvEps2KnZO76_8PCV?usp=drive_link' },
+        { name: 'Électronique Analogique',      difficulty: 7, necessity: 7, priority: 6, link: 'https://drive.google.com/drive/folders/1lR6onw7p1r3yhY1Hkmmk6iOoKAYn0EFt?usp=sharing' },
+        { name: 'Français',                     difficulty: 3, necessity: 4, priority: 2, link: 'YOUR_GOOGLE_DRIVE_LINK' },
+        { name: 'Mécanique Quantique',          difficulty: 9, necessity: 9, priority: 9, link: 'https://drive.google.com/drive/folders/1D1P2qkYIhL3VH3bPrKGSpa8z0T6ceMHt?usp=drive_link' },
+        { name: 'Électronique Numérique',       difficulty: 7, necessity: 6, priority: 5, link: 'https://drive.google.com/drive/folders/1E4Icmb_70wbyY0jEzx3qvFIigIMuJP-W?usp=drive_link' },
+        { name: 'Optique Ondulatoire',          difficulty: 7, necessity: 7, priority: 6, link: 'https://drive.google.com/drive/folders/170G4SltKK3GhbLj4AAFSyf4qzrjAgNRA?usp=drive_link' }
+      ]}
     ];
 
+    function buildCourseBars(c) {
+      const bars = document.createElement('div');
+      bars.className = 'course-row-bars';
+      [
+        { key: 'difficulty', cls: 'bar-difficulty' },
+        { key: 'necessity',  cls: 'bar-necessity' },
+        { key: 'priority',   cls: 'bar-priority' }
+      ].forEach(function (m) {
+        const track = document.createElement('div');
+        track.className = 'course-bar-track';
+        const fill = document.createElement('div');
+        fill.className = 'course-bar-fill ' + m.cls;
+        fill.style.width = (c[m.key] * 10) + '%';
+        const val = document.createElement('span');
+        val.className = 'course-bar-value';
+        val.textContent = c[m.key];
+        track.appendChild(fill);
+        track.appendChild(val);
+        bars.appendChild(track);
+      });
+      return bars;
+    }
+
     function renderCourseChart() {
-      const host = document.getElementById('course-chart');
-      if (!host) return;
-      host.innerHTML = '';
+      const nav = document.getElementById('course-sidebar-nav');
+      const card = document.getElementById('course-chart-card');
+      if (!nav || !card) return;
+      nav.innerHTML = '';
+      card.innerHTML = '';
 
-      courseDifficultyData.forEach(function (c) {
-        const row = document.createElement('div');
-        row.className = 'course-row';
+      courseDifficultyData.forEach(function (sem, i) {
+        const semId = 'course-' + sem.semester.replace(/\s+/g, '-').toLowerCase();
 
-        const label = document.createElement('div');
-        label.className = 'course-row-label';
-        label.textContent = c.name;
-        row.appendChild(label);
+        // Sidebar link
+        const navLink = document.createElement('a');
+        navLink.href = '#' + semId;
+        navLink.innerHTML = sem.semester + ' <span class="course-sidebar-count">' + sem.modules.length + '</span>';
+        nav.appendChild(navLink);
 
-        const bars = document.createElement('div');
-        bars.className = 'course-row-bars';
+        // Semester accordion (reuses the Tronc Commun accordion styling)
+        const details = document.createElement('details');
+        details.className = 'tronc-commun';
+        details.id = semId;
+        if (i === 0) details.open = true;
 
-        [
-          { key: 'difficulty', cls: 'bar-difficulty' },
-          { key: 'necessity',  cls: 'bar-necessity' },
-          { key: 'priority',   cls: 'bar-priority' }
-        ].forEach(function (m) {
-          const track = document.createElement('div');
-          track.className = 'course-bar-track';
-          const fill = document.createElement('div');
-          fill.className = 'course-bar-fill ' + m.cls;
-          fill.style.width = (c[m.key] * 10) + '%';
-          const val = document.createElement('span');
-          val.className = 'course-bar-value';
-          val.textContent = c[m.key];
-          track.appendChild(fill);
-          track.appendChild(val);
-          bars.appendChild(track);
+        const summary = document.createElement('summary');
+        summary.className = 'tronc-commun-summary';
+        summary.innerHTML =
+          '<div><span class="semester-number">S' + (i + 1) + '</span><h3>' + sem.semester + '</h3></div>' +
+          '<span class="tronc-commun-chevron" aria-hidden="true">▾</span>';
+        details.appendChild(summary);
+
+        const body = document.createElement('div');
+        body.className = 'tronc-commun-body';
+
+        sem.modules.forEach(function (c) {
+          const row = document.createElement('div');
+          row.className = 'course-row';
+
+          const label = document.createElement('div');
+          label.className = 'course-row-label';
+          label.textContent = c.name;
+          row.appendChild(label);
+
+          row.appendChild(buildCourseBars(c));
+
+          const discover = document.createElement('a');
+          discover.className = 'course-discover-link';
+          discover.href = c.link;
+          discover.target = '_blank';
+          discover.rel = 'noopener noreferrer';
+          discover.textContent = 'Découvrir →';
+          row.appendChild(discover);
+
+          body.appendChild(row);
         });
 
-        row.appendChild(bars);
-        host.appendChild(row);
+        details.appendChild(body);
+        card.appendChild(details);
       });
     }
     renderCourseChart();
