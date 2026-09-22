@@ -288,6 +288,7 @@ a {
 .hero-content {
   max-width: 680px;
   z-index: 2;
+  position: relative;
 }
 
 .section-label {
@@ -298,6 +299,28 @@ a {
   font-weight: 800;
   letter-spacing: 2px;
   text-transform: uppercase;
+}
+
+.hero .section-label {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 26px;
+  padding: 7px 16px 7px 14px;
+  border: 1px solid rgba(102, 217, 255, 0.3);
+  border-radius: 999px;
+  background: rgba(102, 217, 255, 0.08);
+}
+
+.hero .section-label::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-three);
+  box-shadow: 0 0 8px var(--accent-three);
 }
 
 h1,
@@ -346,13 +369,28 @@ h4 {
   max-width: 650px;
   color: var(--muted);
   font-size: 1.05rem;
+  line-height: 1.7;
 }
 
 .hero-buttons {
   display: flex;
   flex-wrap: wrap;
   gap: 15px;
-  margin-top: 35px;
+  margin-top: 36px;
+  position: relative;
+  z-index: 1;
+}
+
+.hero-buttons .primary-button {
+  box-shadow: 0 8px 30px rgba(102, 217, 255, 0.25);
+}
+
+.hero-buttons .primary-button:hover {
+  box-shadow: 0 10px 36px rgba(102, 217, 255, 0.4);
+}
+
+.hero-buttons .secondary-button:hover {
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .button {
@@ -1258,6 +1296,18 @@ h4 {
   overflow: hidden;
 }
 
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -220px;
+  left: -160px;
+  width: 620px;
+  height: 620px;
+  background: radial-gradient(circle, rgba(102, 217, 255, 0.14) 0%, rgba(102, 217, 255, 0) 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
 .physics-visual {
   position: relative;
   width: 420px;
@@ -1268,39 +1318,119 @@ h4 {
   isolation: isolate;
 }
 
-/* Main atom (SVG: true elliptical orbits, electrons follow the exact path) */
+/* Main atom */
 
-.atom-svg {
-  width: 280px;
-  height: 280px;
-  overflow: visible;
+.atom {
+  position: relative;
+  width: 260px;
+  height: 260px;
+  transform-style: preserve-3d;
   animation: atomHover 8s ease-in-out infinite;
-  filter: drop-shadow(0 0 25px rgba(0, 153, 255, 0.35));
 }
 
-.orbit-path {
-  fill: none;
-  stroke: rgba(120, 210, 255, 0.85);
-  stroke-width: 1.4;
-  filter: drop-shadow(0 0 6px rgba(0, 157, 255, 0.45));
-}
-
-.atom-nucleus-core {
-  transform-origin: 150px 150px;
+.atom-nucleus {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 58px;
+  height: 58px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 30% 25%, #ffffff, #65d9ff 25%, #168cff 65%, #5135d9);
+  box-shadow:
+    0 0 15px #55d7ff,
+    0 0 45px rgba(0, 153, 255, 0.8),
+    0 0 90px rgba(91, 52, 255, 0.5);
   animation: nucleusPulse 3s ease-in-out infinite;
-  filter:
-    drop-shadow(0 0 10px #55d7ff)
-    drop-shadow(0 0 26px rgba(0, 153, 255, 0.8));
+  z-index: 5;
 }
 
-.atom-nucleus-particle {
-  filter: drop-shadow(0 0 6px #ffffff);
+.atom-nucleus span {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #b8f3ff;
+  box-shadow: 0 0 12px #ffffff;
 }
+
+.atom-nucleus span:nth-child(1) {
+  top: 8px;
+  left: 10px;
+}
+
+.atom-nucleus span:nth-child(2) {
+  right: 8px;
+  top: 18px;
+}
+
+.atom-nucleus span:nth-child(3) {
+  bottom: 8px;
+  left: 20px;
+}
+
+/* Electron paths */
+
+.atom-orbit {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 38%;
+  border: 1px solid rgba(69, 202, 255, 0.9);
+  border-radius: 50%;
+  box-shadow:
+    0 0 12px rgba(0, 157, 255, 0.45),
+    inset 0 0 12px rgba(0, 157, 255, 0.2);
+}
+
+.orbit-horizontal {
+  transform: translate(-50%, -50%) rotate(0deg);
+  animation: orbitHorizontal 8s linear infinite;
+}
+
+.orbit-diagonal {
+  transform: translate(-50%, -50%) rotate(60deg);
+  animation: orbitDiagonal 10s linear infinite reverse;
+}
+
+.orbit-vertical {
+  transform: translate(-50%, -50%) rotate(-60deg);
+  animation: orbitVertical 12s linear infinite;
+}
+
+/* Electrons */
 
 .electron {
-  filter:
-    drop-shadow(0 0 6px #ffffff)
-    drop-shadow(0 0 14px #38bfff);
+  position: absolute;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow:
+    0 0 8px #ffffff,
+    0 0 20px #38bfff,
+    0 0 35px #168cff;
+  z-index: 6;
+}
+
+.electron-one {
+  top: 24px;
+  left: 125px;
+  animation: electronOne 8s linear infinite;
+}
+
+.electron-two {
+  top: 125px;
+  right: 12px;
+  animation: electronTwo 10s linear infinite;
+}
+
+.electron-three {
+  bottom: 18px;
+  left: 125px;
+  animation: electronThree 12s linear infinite;
 }
 
 /* Background glowing orbs */
@@ -1447,6 +1577,66 @@ h4 {
   }
 }
 
+@keyframes orbitHorizontal {
+  0% {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+
+  100% {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+@keyframes orbitDiagonal {
+  0% {
+    transform: translate(-50%, -50%) rotate(60deg) rotateZ(0deg);
+  }
+
+  100% {
+    transform: translate(-50%, -50%) rotate(60deg) rotateZ(360deg);
+  }
+}
+
+@keyframes orbitVertical {
+  0% {
+    transform: translate(-50%, -50%) rotate(-60deg) rotateZ(360deg);
+  }
+
+  100% {
+    transform: translate(-50%, -50%) rotate(-60deg) rotateZ(0deg);
+  }
+}
+
+@keyframes electronOne {
+  0% {
+    transform: rotate(0deg) translateX(128px) rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg) translateX(128px) rotate(-360deg);
+  }
+}
+
+@keyframes electronTwo {
+  0% {
+    transform: rotate(60deg) translateX(128px) rotate(-60deg);
+  }
+
+  100% {
+    transform: rotate(420deg) translateX(128px) rotate(-420deg);
+  }
+}
+
+@keyframes electronThree {
+  0% {
+    transform: rotate(-60deg) translateX(128px) rotate(60deg);
+  }
+
+  100% {
+    transform: rotate(-420deg) translateX(128px) rotate(420deg);
+  }
+}
+
 @keyframes orbFloat {
   from {
     transform: translate(0, 0) scale(1);
@@ -1518,15 +1708,15 @@ h4 {
     opacity: 0.45;
   }
 
-  .atom-svg {
+  .atom {
     opacity: 0.75;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .atom-svg,
-  .atom-nucleus-core,
-  .orbit-path,
+  .atom,
+  .atom-nucleus,
+  .atom-orbit,
   .electron,
   .glow-orb,
   .floating-symbol,
@@ -2824,14 +3014,16 @@ h4 {
   align-items: center;
   flex-wrap: wrap;
   gap: 14px;
-  margin-top: 30px;
-  padding: 14px 20px;
-  border: 1px solid var(--border);
+  margin-top: 32px;
+  padding: 14px 22px;
+  border: 1px solid rgba(102, 217, 255, 0.22);
   border-radius: 16px;
   background: rgba(15, 25, 52, 0.5);
   backdrop-filter: blur(6px);
   width: fit-content;
   max-width: 100%;
+  position: relative;
+  z-index: 1;
 }
 
 .site-stat {
@@ -3115,32 +3307,6 @@ h4 {
     left: 16px;
     right: 16px;
     max-width: none;
-  }
-}
-
-/* =========================================
-   Hero photo band (students on campus) — full-width,
-   sits behind the sticky navbar and the hero content.
-   Replace campus-photo.jpg in the project folder to update it.
-   ========================================= */
-.hero-photo-band {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 760px;
-  background-image:
-    linear-gradient(180deg, rgba(5, 8, 22, 0.35) 0%, rgba(5, 8, 22, 0.78) 60%, var(--background) 100%),
-    url('campus-photo.jpg');
-  background-size: cover;
-  background-position: center top;
-  background-repeat: no-repeat;
-  pointer-events: none;
-}
-
-@media (max-width: 720px) {
-  .hero-photo-band {
-    height: 560px;
   }
 }
 
