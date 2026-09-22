@@ -1268,119 +1268,39 @@ h4 {
   isolation: isolate;
 }
 
-/* Main atom */
+/* Main atom (SVG: true elliptical orbits, electrons follow the exact path) */
 
-.atom {
-  position: relative;
-  width: 260px;
-  height: 260px;
-  transform-style: preserve-3d;
+.atom-svg {
+  width: 280px;
+  height: 280px;
+  overflow: visible;
   animation: atomHover 8s ease-in-out infinite;
+  filter: drop-shadow(0 0 25px rgba(0, 153, 255, 0.35));
 }
 
-.atom-nucleus {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 58px;
-  height: 58px;
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
-  background:
-    radial-gradient(circle at 30% 25%, #ffffff, #65d9ff 25%, #168cff 65%, #5135d9);
-  box-shadow:
-    0 0 15px #55d7ff,
-    0 0 45px rgba(0, 153, 255, 0.8),
-    0 0 90px rgba(91, 52, 255, 0.5);
+.orbit-path {
+  fill: none;
+  stroke: rgba(120, 210, 255, 0.85);
+  stroke-width: 1.4;
+  filter: drop-shadow(0 0 6px rgba(0, 157, 255, 0.45));
+}
+
+.atom-nucleus-core {
+  transform-origin: 150px 150px;
   animation: nucleusPulse 3s ease-in-out infinite;
-  z-index: 5;
+  filter:
+    drop-shadow(0 0 10px #55d7ff)
+    drop-shadow(0 0 26px rgba(0, 153, 255, 0.8));
 }
 
-.atom-nucleus span {
-  position: absolute;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: #b8f3ff;
-  box-shadow: 0 0 12px #ffffff;
+.atom-nucleus-particle {
+  filter: drop-shadow(0 0 6px #ffffff);
 }
-
-.atom-nucleus span:nth-child(1) {
-  top: 8px;
-  left: 10px;
-}
-
-.atom-nucleus span:nth-child(2) {
-  right: 8px;
-  top: 18px;
-}
-
-.atom-nucleus span:nth-child(3) {
-  bottom: 8px;
-  left: 20px;
-}
-
-/* Electron paths */
-
-.atom-orbit {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 100%;
-  height: 38%;
-  border: 1px solid rgba(69, 202, 255, 0.9);
-  border-radius: 50%;
-  box-shadow:
-    0 0 12px rgba(0, 157, 255, 0.45),
-    inset 0 0 12px rgba(0, 157, 255, 0.2);
-}
-
-.orbit-horizontal {
-  transform: translate(-50%, -50%) rotate(0deg);
-  animation: orbitHorizontal 8s linear infinite;
-}
-
-.orbit-diagonal {
-  transform: translate(-50%, -50%) rotate(60deg);
-  animation: orbitDiagonal 10s linear infinite reverse;
-}
-
-.orbit-vertical {
-  transform: translate(-50%, -50%) rotate(-60deg);
-  animation: orbitVertical 12s linear infinite;
-}
-
-/* Electrons */
 
 .electron {
-  position: absolute;
-  width: 13px;
-  height: 13px;
-  border-radius: 50%;
-  background: #ffffff;
-  box-shadow:
-    0 0 8px #ffffff,
-    0 0 20px #38bfff,
-    0 0 35px #168cff;
-  z-index: 6;
-}
-
-.electron-one {
-  top: 24px;
-  left: 125px;
-  animation: electronOne 8s linear infinite;
-}
-
-.electron-two {
-  top: 125px;
-  right: 12px;
-  animation: electronTwo 10s linear infinite;
-}
-
-.electron-three {
-  bottom: 18px;
-  left: 125px;
-  animation: electronThree 12s linear infinite;
+  filter:
+    drop-shadow(0 0 6px #ffffff)
+    drop-shadow(0 0 14px #38bfff);
 }
 
 /* Background glowing orbs */
@@ -1527,66 +1447,6 @@ h4 {
   }
 }
 
-@keyframes orbitHorizontal {
-  0% {
-    transform: translate(-50%, -50%) rotate(0deg);
-  }
-
-  100% {
-    transform: translate(-50%, -50%) rotate(360deg);
-  }
-}
-
-@keyframes orbitDiagonal {
-  0% {
-    transform: translate(-50%, -50%) rotate(60deg) rotateZ(0deg);
-  }
-
-  100% {
-    transform: translate(-50%, -50%) rotate(60deg) rotateZ(360deg);
-  }
-}
-
-@keyframes orbitVertical {
-  0% {
-    transform: translate(-50%, -50%) rotate(-60deg) rotateZ(360deg);
-  }
-
-  100% {
-    transform: translate(-50%, -50%) rotate(-60deg) rotateZ(0deg);
-  }
-}
-
-@keyframes electronOne {
-  0% {
-    transform: rotate(0deg) translateX(128px) rotate(0deg);
-  }
-
-  100% {
-    transform: rotate(360deg) translateX(128px) rotate(-360deg);
-  }
-}
-
-@keyframes electronTwo {
-  0% {
-    transform: rotate(60deg) translateX(128px) rotate(-60deg);
-  }
-
-  100% {
-    transform: rotate(420deg) translateX(128px) rotate(-420deg);
-  }
-}
-
-@keyframes electronThree {
-  0% {
-    transform: rotate(-60deg) translateX(128px) rotate(60deg);
-  }
-
-  100% {
-    transform: rotate(-420deg) translateX(128px) rotate(420deg);
-  }
-}
-
 @keyframes orbFloat {
   from {
     transform: translate(0, 0) scale(1);
@@ -1658,15 +1518,15 @@ h4 {
     opacity: 0.45;
   }
 
-  .atom {
+  .atom-svg {
     opacity: 0.75;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .atom,
-  .atom-nucleus,
-  .atom-orbit,
+  .atom-svg,
+  .atom-nucleus-core,
+  .orbit-path,
   .electron,
   .glow-orb,
   .floating-symbol,
