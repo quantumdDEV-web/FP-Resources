@@ -69,7 +69,7 @@
   <a href="#home">Home</a>
   <a href="#archive">Archive</a>
   <a href="#community-documents">Community Documents</a>
-  <a href="#professors">Professors</a>
+  <a href="#course-difficulty">Course Difficulty</a>
   <a href="#system-info">About</a>
 </nav>
 
@@ -431,97 +431,6 @@
     </div>
   </div>
 
-  <!-- Professor Modal: add professor / professor details + reviews -->
-  <div id="prof-modal" class="auth-modal">
-    <div class="auth-modal-backdrop" data-close-prof></div>
-    <div class="auth-modal-box people-modal-box prof-modal-box">
-      <button class="auth-modal-close" data-close-prof aria-label="Close">×</button>
-
-      <!-- Add a professor -->
-      <div id="prof-view-add" hidden>
-        <h3 class="profile-modal-title">Add a professor</h3>
-        <p class="profile-modal-subtitle">Can't find them in the list? Add them so students can review them.</p>
-        <div class="pa-preview">
-          <div id="pa-avatar" class="prof-avatar prof-avatar-lg"></div>
-          <span>Pick male or female and every professor gets their own look 🎓</span>
-        </div>
-        <form id="prof-add-form" class="auth-form">
-          <label for="pa-name">Professor's name</label>
-          <input type="text" id="pa-name" required minlength="3" maxlength="60" placeholder="e.g. Dr. Ahmed Benali" />
-
-          <label id="pa-gender-label">Gender (sets the avatar)</label>
-          <div class="prof-gender-row" role="group" aria-labelledby="pa-gender-label">
-            <button type="button" class="prof-gender-btn" data-gender="male" aria-pressed="false">♂ Male</button>
-            <button type="button" class="prof-gender-btn" data-gender="female" aria-pressed="false">♀ Female</button>
-          </div>
-
-          <label for="pa-dept">Department (optional)</label>
-          <input type="text" id="pa-dept" list="pa-dept-list" maxlength="60" placeholder="e.g. Physics" />
-          <datalist id="pa-dept-list">
-            <option value="Physics"></option>
-            <option value="Mathematics"></option>
-            <option value="Chemistry"></option>
-            <option value="Biology"></option>
-            <option value="Geology"></option>
-            <option value="Computer Science"></option>
-            <option value="Languages"></option>
-          </datalist>
-
-          <p class="auth-error" id="pa-error" hidden></p>
-          <button type="submit" id="pa-save-btn" class="button primary-button auth-submit">Add professor</button>
-        </form>
-      </div>
-
-      <!-- Professor details + reviews -->
-      <div id="prof-view-detail" hidden>
-        <div class="prof-board">
-          <span class="chalk-doodle cd-1" aria-hidden="true">E = mc²</span>
-          <span class="chalk-doodle cd-2" aria-hidden="true">ΔxΔp ≥ ħ/2</span>
-          <span class="chalk-doodle cd-3" aria-hidden="true">∇·E = ρ/ε₀</span>
-          <span class="chalk-doodle cd-4" aria-hidden="true">λ = h/p</span>
-          <span class="chalk-doodle cd-5" aria-hidden="true">F = ma</span>
-
-          <div id="pd-portrait" class="prof-avatar prof-avatar-lg"></div>
-
-          <div class="prof-board-info">
-            <span class="prof-board-tag">Professor</span>
-            <h3 id="pd-name"></h3>
-            <span id="pd-dept" class="chalk-chip"></span>
-          </div>
-
-          <div class="prof-board-score">
-            <div class="prof-board-grade"><strong id="pd-avg">–</strong><span>/5</span></div>
-            <span id="pd-stars"></span>
-            <span id="pd-count" class="prof-count"></span>
-          </div>
-        </div>
-
-        <h4 class="profile-section-title" id="rv-form-title">Write a review</h4>
-        <form id="review-form" class="auth-form">
-          <div class="star-row">
-            <div id="rv-stars" class="star-input" role="group" aria-label="Your rating"></div>
-            <span id="rv-rating-label" class="star-label">Tap a star</span>
-          </div>
-
-          <textarea id="rv-comment" rows="4" maxlength="500" required placeholder="Describe your experience: teaching style, clarity, exams, availability… (10–500 characters)"></textarea>
-          <span class="profile-counter"><span id="rv-count">0</span>/500</span>
-
-          <label class="rv-anon"><input type="checkbox" id="rv-anon" checked /> Post anonymously</label>
-          <p class="rv-anon-note">Anonymous reviews don't show your name to other students.</p>
-
-          <p class="auth-error" id="rv-error" hidden></p>
-          <p class="profile-success" id="rv-success" hidden>Saved ✓</p>
-
-          <button type="submit" id="rv-submit-btn" class="button primary-button auth-submit">Post review</button>
-          <button type="button" id="rv-delete-btn" class="profile-skip-btn" hidden>Delete my review</button>
-        </form>
-
-        <h4 class="profile-section-title prof-reviews-title">Reviews</h4>
-        <div id="pd-reviews" class="prof-reviews"></div>
-      </div>
-    </div>
-  </div>
-
   <!-- Hero Section -->
   <main>
 
@@ -577,14 +486,14 @@
             <span class="site-stat-num" id="stat-documents">0</span>
             <span class="site-stat-label" data-i18n="stats.documents">documents</span>
           </div>
-          <span class="site-stat-sep" aria-hidden="true">·</span>
-          <div class="site-stat">
-            <span class="site-stat-num" id="stat-professors">0</span>
-            <span class="site-stat-label" data-i18n="stats.professors">professors reviewed</span>
-          </div>
         </div>
 
       </div>
+
+    <!-- Hero photo: replace the src below with your campus photo once it's uploaded to the project folder -->
+    <div class="hero-photo-wrap" aria-hidden="false">
+      <img class="hero-photo" src="campus-photo.jpg" alt="Students on campus at Faculté Polydisciplinaire de Larache" loading="lazy" />
+    </div>
 
     <div class="physics-visual" aria-hidden="true">
   <div class="glow-orb orb-one"></div>
@@ -1031,6 +940,13 @@
     </p>
   </div>
 
+  <div id="community-gate" class="auth-gate">
+    <p>Log in to read and open the community documents.</p>
+    <button type="button" id="community-login-btn" class="button primary-button">Log In</button>
+  </div>
+
+  <div id="community-content" hidden>
+
   <details class="tronc-commun" id="community-collapse">
     <summary class="tronc-commun-summary">
       <div>
@@ -1120,41 +1036,36 @@
 
     </div>
   </details>
+
+  </div><!-- /#community-content -->
 </section>
-<!-- PROFESSORS SECTION -->
-<section class="documents-section prof-section" id="professors">
+
+<!-- COURSE DIFFICULTY SECTION -->
+<section class="documents-section" id="course-difficulty">
   <div class="section-heading">
-    <span class="section-label">Student reviews</span>
-    <h2>Rate Your Professors</h2>
+    <span class="section-kicker">Plan your semester</span>
+    <h2>See How Hard Your Courses Are</h2>
     <p>
-      Share honest, respectful feedback about professors in your department and
-      help other students know what to expect. You can post anonymously.
+      A quick, at-a-glance look at how demanding each course tends to be, based on
+      general student consensus gathered from the community and public study-forum
+      discussions — alongside how necessary each course is for your degree and how
+      much priority it deserves in your study time. Treat this as a starting point,
+      not an exact science.
     </p>
   </div>
 
-  <div id="prof-gate" class="prof-gate">
-    <p>Log in to see professor ratings and write your own review.</p>
-    <button type="button" id="prof-login-btn" class="button primary-button">Log In</button>
-  </div>
-
-  <div id="prof-content" hidden>
-    <div class="prof-toolbar">
-      <input type="search" id="prof-search" class="prof-search" placeholder="Search professors or departments…" autocomplete="off" />
-      <select id="prof-sort" class="prof-sort" aria-label="Sort professors">
-        <option value="top">Top rated</option>
-        <option value="reviews">Most reviewed</option>
-        <option value="az">A → Z</option>
-      </select>
-      <button type="button" id="prof-add-btn" class="button primary-button">+ Add a professor</button>
+  <div class="course-chart-card">
+    <div class="course-chart-legend">
+      <span class="legend-item"><span class="legend-dot legend-dot-difficulty"></span>Difficulty</span>
+      <span class="legend-item"><span class="legend-dot legend-dot-necessity"></span>Necessity</span>
+      <span class="legend-item"><span class="legend-dot legend-dot-priority"></span>Priority</span>
     </div>
-
-    <p class="prof-guidelines">
-      Be respectful and constructive: talk about teaching, not personal life.
-      Insults or false claims can be reported and removed.
+    <div id="course-chart" class="course-chart" role="img" aria-label="Bar chart comparing difficulty, necessity and priority for each course"></div>
+    <p class="course-chart-note">
+      Scores are out of 10. Difficulty and necessity are informed by common student
+      discussion of the Physics program; Priority is a suggested balance of the two
+      (harder + more necessary courses get study-time priority first).
     </p>
-
-    <div id="prof-grid" class="prof-grid" aria-live="polite"></div>
-    <p id="prof-empty" class="people-empty" hidden>No professors found. Use “Add a professor” to create one.</p>
   </div>
 </section>
 
@@ -1754,7 +1665,7 @@
         window.loadUserFavorites(user.uid);
         backfillPublicProfile(user.uid);
         startInboxListener(user.uid);
-        onProfessorsAuth(user);
+        onCommunityDocsAuth(user);
         loadMyBadges(user.uid);
         trackLoginStreak(user.uid);
 
@@ -1775,7 +1686,7 @@
         window.applyModuleFilters();
         hideWelcomeBanner();
         stopInboxListener();
-        onProfessorsAuth(null);
+        onCommunityDocsAuth(null);
         closePeopleModal();
         peopleCache = null;
         myBadges = {};
@@ -2125,7 +2036,6 @@
         host.hidden = false;
         countUp(document.getElementById('stat-students'), d.students || 0);
         countUp(document.getElementById('stat-documents'), d.documents || 0);
-        countUp(document.getElementById('stat-professors'), d.professorsReviewed || 0);
       }).catch(function (err) {
         console.error('Stats load failed:', err);   // banner simply stays hidden
       });
@@ -2818,772 +2728,79 @@
     });
 
     // =====================================================
-    // ---- Professor ratings ----
-    // professors/{slug}                 -> name, nameLower, department, createdAt
-    // professorReviews/{id}             -> professorId, rating, comment, anonymous, createdAt, (authorId only if NOT anonymous)
-    // reviewOwners/{professorId_uid}    -> private link (only the owner can read) used for "one review per professor" + edit/delete
-    // reviewReports/{reviewId_uid}      -> reports (write-only for users; you read them in the console)
+    // ---- Community Documents: sign-in gate ----
     // =====================================================
-    const profSection = document.getElementById('professors');
-    const profGate = document.getElementById('prof-gate');
-    const profContent = document.getElementById('prof-content');
-    const profGrid = document.getElementById('prof-grid');
-    const profEmpty = document.getElementById('prof-empty');
-    const profSearch = document.getElementById('prof-search');
-    const profSort = document.getElementById('prof-sort');
-    const profModal = document.getElementById('prof-modal');
-    const profViewAdd = document.getElementById('prof-view-add');
-    const profViewDetail = document.getElementById('prof-view-detail');
-    const rvComment = document.getElementById('rv-comment');
-    const RATING_WORDS = ['Tap a star', 'Poor', 'Fair', 'Good', 'Very good', 'Excellent'];
+    const communityGate = document.getElementById('community-gate');
+    const communityContent = document.getElementById('community-content');
 
-    function freshProfState() {
-      return { professors: [], reviews: [], owners: {}, profiles: {}, loaded: false, loading: false };
-    }
-    let profState = freshProfState();
-    let profObserver = null;
-    let currentProfId = null;
-    let rvRating = 0;
-
-    // ----- Auth hook -----
-    function onProfessorsAuth(user) {
-      if (profObserver) profObserver.disconnect();
-      profState = freshProfState();
-      currentProfId = null;
-      profGrid.textContent = '';
-      profEmpty.hidden = true;
-
-      if (!user) {
-        profGate.hidden = false;
-        profContent.hidden = true;
-        closeProfModal();
-        return;
-      }
-
-      profGate.hidden = true;
-      profContent.hidden = false;
-
-      // Load lazily: only when the section is near the viewport (saves Firestore reads)
-      if ('IntersectionObserver' in window) {
-        if (!profObserver) {
-          profObserver = new IntersectionObserver(function (entries) {
-            if (entries.some(function (e) { return e.isIntersecting; })) loadProfessors();
-          }, { rootMargin: '400px' });
-        }
-        profObserver.observe(profSection);
-      } else {
-        loadProfessors();
-      }
+    function onCommunityDocsAuth(user) {
+      const signedIn = !!user;
+      communityGate.hidden = signedIn;
+      communityContent.hidden = !signedIn;
     }
 
-    // ----- Loading -----
-    function loadProfilesMap() {
-      const build = function () {
-        profState.profiles = {};
-        (peopleCache || []).forEach(function (p) { profState.profiles[p.uid] = p; });
-      };
-      if (peopleCache) { build(); return Promise.resolve(); }
-      return db.collection('publicProfiles').limit(300).get().then(function (snap) {
-        peopleCache = snap.docs.map(function (d) {
-          return Object.assign({ uid: d.id }, d.data());
-        }).sort(function (a, b) { return fullName(a).localeCompare(fullName(b)); });
-        build();
-      }).catch(function () { build(); });
-    }
-
-    function loadProfessors(force) {
-      const user = auth.currentUser;
-      if (!user || profState.loading || (profState.loaded && !force)) return Promise.resolve();
-      const state = profState;
-      state.loading = true;
-      if (!state.loaded) profGrid.textContent = 'Loading professors…';
-
-      return Promise.all([
-        db.collection('professors').limit(300).get(),
-        db.collection('professorReviews').limit(2000).get(),
-        db.collection('reviewOwners').where('ownerUid', '==', user.uid).get(),
-        loadProfilesMap()
-      ]).then(function (res) {
-        if (state !== profState) return; // user logged out / switched while loading
-        state.professors = res[0].docs.map(function (d) { return Object.assign({ id: d.id }, d.data()); });
-        state.reviews = res[1].docs.map(function (d) { return Object.assign({ id: d.id }, d.data()); });
-        state.owners = {};
-        res[2].docs.forEach(function (d) {
-          const o = d.data();
-          state.owners[o.professorId] = { reviewId: o.reviewId, docId: d.id };
-        });
-
-        // Clean up owner links whose review was removed (e.g. by an admin) so the user can post again
-        if (state.reviews.length < 2000) {
-          const ids = {};
-          state.reviews.forEach(function (r) { ids[r.id] = true; });
-          Object.keys(state.owners).forEach(function (profId) {
-            if (!ids[state.owners[profId].reviewId]) {
-              db.collection('reviewOwners').doc(state.owners[profId].docId).delete().catch(function () {});
-              delete state.owners[profId];
-            }
-          });
-        }
-
-        state.loaded = true;
-        renderProfessors();
-        if (profModal.classList.contains('is-open') && !profViewDetail.hidden) renderProfDetail();
-      }).catch(function (err) {
-        console.error('Loading professors failed:', err.code, err.message);
-        if (state !== profState) return;
-        profGrid.textContent = err.code === 'permission-denied'
-          ? 'Permission denied: update your Firestore rules to allow professor ratings.'
-          : 'Could not load professors. Please try again.';
-      }).then(function () { state.loading = false; });
-    }
-
-    // ----- Helpers -----
-    function computeStats() {
-      const map = {};
-      profState.reviews.forEach(function (r) {
-        const m = map[r.professorId] || (map[r.professorId] = { n: 0, sum: 0 });
-        m.n += 1; m.sum += r.rating;
-      });
-      Object.keys(map).forEach(function (k) { map[k].avg = map[k].sum / map[k].n; });
-      return map;
-    }
-
-    function starsEl(avg) {
-      const wrap = document.createElement('span');
-      wrap.className = 'stars';
-      wrap.setAttribute('role', 'img');
-      wrap.setAttribute('aria-label', avg.toFixed(1) + ' out of 5 stars');
-      const bg = document.createElement('span');
-      bg.className = 'stars-bg';
-      bg.textContent = '★★★★★';
-      const fill = document.createElement('span');
-      fill.className = 'stars-fill';
-      fill.textContent = '★★★★★';
-      fill.style.width = Math.max(0, Math.min(100, (avg / 5) * 100)) + '%';
-      wrap.appendChild(bg);
-      wrap.appendChild(fill);
-      return wrap;
-    }
-
-    function profSlug(name) {
-      let t = name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-      t = t.replace(/^(dr|prof|pr|professor|professeur|mr|mme|mrs|ms)\.?\s+/, '');
-      t = t.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-+|-+$/g, '');
-      return t.slice(0, 100);
-    }
-
-    // ----- Imaginary professor avatar (unique look per name + chosen gender, no photos needed) -----
-    // gender: 'male' | 'female'. Older professors saved without a gender get a neutral short-hair look.
-    function profAvatarEl(name, gender) {
-      const key = profSlug(name || '') || 'prof';
-      let h = 5381;
-      for (let i = 0; i < key.length; i++) h = ((h << 5) + h + key.charCodeAt(i)) >>> 0;
-      const pick = function (arr, shift) { return arr[(h >>> shift) % arr.length]; };
-
-      const g = gender === 'female' || gender === 'male' ? gender : 'neutral';
-      const skin = pick(['#f6d9c0', '#e9bd97', '#cf946b', '#a26c47', '#744a30'], 0);
-      const hair = pick(['#17141a', '#2b1d16', '#4a2f20', '#6b4327', '#8b5a2b'], 3);
-      const blazer = pick(['#27324f', '#3a3f4b', '#1f4d4a', '#5b2a3c', '#7c6544', '#2e4a7d'], 6);
-      const shirt = pick(['#f4f1e8', '#dfe8ff', '#ffd9e2', '#d3f3e8'], 9);
-      const bg = pick(['#cfe6ff', '#d9d2ff', '#c9f5e4', '#ffe2c9', '#ffd3df', '#e6e8ef'], 12);
-      const glasses = (h >>> 15) % 4 === 0;
-      const stubble = g === 'male' && (h >>> 17) % 4 === 0;
-
-      // Hairstyle pools: male 0 crop, 1 side-swept, 2 curly top; female 0 long, 1 bob, 2 bun, 3 wavy long.
-      const style = g === 'female' ? (h >>> 18) % 4 : g === 'male' ? (h >>> 18) % 3 : 0;
-      const female = g === 'female';
-
-      let back = '';   // hair behind the head and shoulders
-      let front = '';  // hair on top of the head
-      let locks = '';  // long strands that fall in front of the shoulders
-      let extras = ''; // earrings etc.
-      const circles = function (list, color) {
-        return list.map(function (c) {
-          return '<circle cx="' + c[0] + '" cy="' + c[1] + '" r="' + c[2] + '" fill="' + color + '"/>';
-        }).join('');
-      };
-      const fringe = '<path d="M30 42 C29 23 40 17 51 17 C63 17 71 24 70 42 C66 32 58 26.5 46 29 C39 30.5 33 35 30 42Z" fill="' + hair + '"/>';
-
-      if (female) {
-        if (style === 0) {
-          back = '<path d="M27 44 C23 22 36 13.5 50 13.5 C64 13.5 77 22 73 44 L78 82 Q64 88 50 84 Q36 88 22 82Z" fill="' + hair + '"/>';
-          locks = '<path d="M27 46 C25 60 24 72 27 83 Q34 85 36.5 78 C33 68 32 56 32.5 46Z" fill="' + hair + '"/>'
-                + '<path d="M73 46 C75 60 76 72 73 83 Q66 85 63.5 78 C67 68 68 56 67.5 46Z" fill="' + hair + '"/>';
-          front = fringe;
-        } else if (style === 1) {
-          back = '<path d="M27 46 C23 24 36 14 50 14 C64 14 77 24 73 46 L74 64 Q62 70 50 67 Q38 70 26 64Z" fill="' + hair + '"/>';
-          front = fringe;
-        } else if (style === 2) {
-          back = '<circle cx="50" cy="13.5" r="8.5" fill="' + hair + '"/>';
-          front = '<path d="M31 41 C29 23 40 18 50 18 C60 18 71 23 69 41 C66.5 33 61 27 50 27 C39 27 33.5 33 31 41Z" fill="' + hair + '"/>';
-          extras = '<circle cx="31.4" cy="52" r="1.5" fill="#ffcf5c"/><circle cx="68.6" cy="52" r="1.5" fill="#ffcf5c"/>';
-        } else {
-          // long wavy hair: wavy outline, waves also fall in front of the shoulders
-          back = '<path d="M27 44 C22 22 36 13.5 50 13.5 C64 13.5 78 22 73 44 C77 52 74 60 77 67 C79 73 75 79 78 85 L22 85 C25 79 21 73 23 67 C26 60 23 52 27 44Z" fill="' + hair + '"/>';
-          locks = '<path d="M26.5 48 C24 58 28 64 25 72 C23 78 27 82 30 84 Q36 84 37 78 C32 70 36 62 32.5 50Z" fill="' + hair + '"/>'
-                + '<path d="M73.5 48 C76 58 72 64 75 72 C77 78 73 82 70 84 Q64 84 63 78 C68 70 64 62 67.5 50Z" fill="' + hair + '"/>';
-          front = '<path d="M31 41 C31 25 40 19 50 19 C60 19 69 25 69 41 C64 31 57 27 50 27 C43 27 36 31 31 41Z" fill="' + hair + '"/>'
-                + '<path d="M50 19.5 Q47 24 46 27" stroke="rgba(255,255,255,.12)" stroke-width="1.4" fill="none" stroke-linecap="round"/>';
-        }
-      } else if (style === 1) {
-        front = '<path d="M30.5 42 C27 21 40 13.5 53 15 C66 16 73 26 69.5 42 C67.5 34.5 62 29.5 54 29 C47 28.5 40 26 33.5 34 C32 36 31 39 30.5 42Z" fill="' + hair + '"/>'
-              + '<path d="M44 20 Q54 15.5 63 21" stroke="rgba(255,255,255,.14)" stroke-width="2" fill="none" stroke-linecap="round"/>';
-      } else if (style === 2) {
-        front = '<path d="M32 38 C31 28 38 24 50 24 C62 24 69 28 68 38Z" fill="' + hair + '"/>'
-              + circles([[34, 27, 6.5], [41, 21, 7], [50, 18.5, 7.5], [59, 21, 7], [66, 27, 6.5], [31, 35, 4.5], [69, 35, 4.5]], hair);
-      } else {
-        front = '<path d="M31.5 40 C30 23 40.5 18.5 50 18.5 C59.5 18.5 70 23 68.5 40 C66.5 33 61 29 50 29 C39 29 33.5 33 31.5 40Z" fill="' + hair + '"/>';
-      }
-
-      const browW = female ? 1.7 : 2.4;
-      const browY = female ? 0.6 : 0;
-      let svg = '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">';
-      svg += '<rect width="100" height="100" fill="' + bg + '"/>';
-      svg += back;
-      // blazer, neck, shirt, lapels
-      svg += '<path d="M10 100 C10 77 30 70 50 70 C70 70 90 77 90 100Z" fill="' + blazer + '"/>';
-      svg += '<rect x="44.5" y="56" width="11" height="18" rx="5" fill="' + skin + '"/>';
-      svg += '<path d="M44.5 60 Q50 67.5 55.5 60 L55.5 67 L44.5 67Z" fill="rgba(0,0,0,.13)"/>';
-      if (female) {
-        svg += '<path d="M40.5 70.5 Q50 84 59.5 70.5 L62 100 L38 100Z" fill="' + shirt + '"/>';
-      } else {
-        svg += '<path d="M40.5 70.5 L50 86 L59.5 70.5 L59.5 100 L40.5 100Z" fill="' + shirt + '"/>';
-      }
-      svg += '<path d="M38 71 L50 90 L40 100 L27 82Z" fill="rgba(0,0,0,.22)"/><path d="M62 71 L50 90 L60 100 L73 82Z" fill="rgba(0,0,0,.22)"/>';
-      svg += locks;
-      // ears, head
-      svg += '<circle cx="32.2" cy="45.5" r="3.6" fill="' + skin + '"/><circle cx="67.8" cy="45.5" r="3.6" fill="' + skin + '"/>';
-      svg += '<ellipse cx="50" cy="43" rx="' + (female ? 17 : 18) + '" ry="' + (female ? 20 : 20.5) + '" fill="' + skin + '"/>';
-      if (stubble) {
-        svg += '<path d="M32.5 48 Q34 65 50 65.5 Q66 65 67.5 48 Q62 60 50 60 Q38 60 32.5 48Z" fill="' + hair + '" opacity=".3"/>';
-      }
-      svg += front + extras;
-      // face
-      svg += '<circle cx="37.5" cy="51.5" r="3.8" fill="#ff7a7a" opacity=".16"/><circle cx="62.5" cy="51.5" r="3.8" fill="#ff7a7a" opacity=".16"/>';
-      svg += '<path d="M38 ' + (38.8 - browY) + ' Q42.8 ' + (36.2 - browY) + ' 47 ' + (38 - browY) + '" stroke="' + hair + '" stroke-width="' + browW + '" fill="none" stroke-linecap="round"/>';
-      svg += '<path d="M53 ' + (38 - browY) + ' Q57.2 ' + (36.2 - browY) + ' 62 ' + (38.8 - browY) + '" stroke="' + hair + '" stroke-width="' + browW + '" fill="none" stroke-linecap="round"/>';
-      svg += '<ellipse cx="42.5" cy="44" rx="1.9" ry="2.4" fill="#1c1c22"/><ellipse cx="57.5" cy="44" rx="1.9" ry="2.4" fill="#1c1c22"/>';
-      svg += '<circle cx="43.2" cy="43.1" r=".7" fill="#fff"/><circle cx="58.2" cy="43.1" r=".7" fill="#fff"/>';
-      if (female) {
-        svg += '<path d="M40.3 42.6 L38.9 41.4 M59.7 42.6 L61.1 41.4" stroke="#1c1c22" stroke-width="1.1" stroke-linecap="round"/>';
-      }
-      if (glasses) {
-        svg += '<rect x="35.5" y="39.5" width="14" height="10.5" rx="3.5" fill="rgba(255,255,255,.12)" stroke="#23232b" stroke-width="1.3"/>';
-        svg += '<rect x="50.5" y="39.5" width="14" height="10.5" rx="3.5" fill="rgba(255,255,255,.12)" stroke="#23232b" stroke-width="1.3"/>';
-        svg += '<path d="M49.5 43.5 L50.5 43.5" stroke="#23232b" stroke-width="1.3"/>';
-      }
-      svg += '<path d="M50 46.5 Q48 51 50.4 51.5" stroke="rgba(0,0,0,.22)" stroke-width="1.2" fill="none" stroke-linecap="round"/>';
-      if (female) {
-        svg += '<path d="M45 56 Q47.5 54.5 50 55.7 Q52.5 54.5 55 56 Q52.5 60.4 50 60.4 Q47.5 60.4 45 56Z" fill="#c4556a"/>';
-      } else {
-        svg += '<path d="M45.5 56.5 Q50 60.4 54.5 56.5" stroke="#8a4b3c" stroke-width="1.7" fill="none" stroke-linecap="round"/>';
-      }
-      svg += '</svg>';
-
-      const span = document.createElement('span');
-      span.className = 'prof-avatar-svg';
-      span.innerHTML = svg; // built only from constants and colors picked from fixed lists, never user text
-      return span;
-    }
-
-    // ----- Professors grid -----
-    function renderProfessors() {
-      const stats = computeStats();
-      const q = profSearch.value.trim().toLowerCase();
-      const sort = profSort.value;
-
-      const list = profState.professors.filter(function (p) {
-        return !q || ((p.name || '') + ' ' + (p.department || '')).toLowerCase().indexOf(q) !== -1;
-      });
-      list.sort(function (a, b) {
-        const sa = stats[a.id] || { n: 0, avg: 0 };
-        const sb = stats[b.id] || { n: 0, avg: 0 };
-        if (sort === 'az') return (a.name || '').localeCompare(b.name || '');
-        if (sort === 'reviews') return sb.n - sa.n || (a.name || '').localeCompare(b.name || '');
-        return sb.avg - sa.avg || sb.n - sa.n || (a.name || '').localeCompare(b.name || '');
-      });
-
-      profGrid.textContent = '';
-      profEmpty.hidden = list.length > 0;
-
-      list.forEach(function (p) {
-        const st = stats[p.id] || { n: 0, avg: 0 };
-        const card = document.createElement('button');
-        card.type = 'button';
-        card.className = 'prof-card';
-
-        const top = document.createElement('div');
-        top.className = 'prof-card-top';
-        const av = document.createElement('div');
-        av.className = 'prof-avatar';
-        av.appendChild(profAvatarEl(p.name, p.gender));
-        const nameBox = document.createElement('div');
-        nameBox.className = 'prof-card-name';
-        const nm = document.createElement('strong');
-        nm.textContent = p.name;
-        nameBox.appendChild(nm);
-        if (p.department) {
-          const dept = document.createElement('span');
-          dept.textContent = p.department;
-          nameBox.appendChild(dept);
-        }
-        top.appendChild(av);
-        top.appendChild(nameBox);
-
-        const rating = document.createElement('div');
-        rating.className = 'prof-card-rating';
-        rating.appendChild(starsEl(st.avg));
-        const txt = document.createElement('span');
-        txt.textContent = st.n
-          ? st.avg.toFixed(1) + ' · ' + st.n + (st.n === 1 ? ' review' : ' reviews')
-          : 'No reviews yet';
-        rating.appendChild(txt);
-
-        card.appendChild(top);
-        card.appendChild(rating);
-        card.addEventListener('click', function () { openProfessor(p.id); });
-        profGrid.appendChild(card);
-      });
-    }
-
-    // ----- Modal plumbing -----
-    function showProfView(name) {
-      profViewAdd.hidden = name !== 'add';
-      profViewDetail.hidden = name !== 'detail';
-      profModal.classList.add('is-open');
-    }
-    function closeProfModal() {
-      profModal.classList.remove('is-open');
-    }
-
-    // ----- Add professor -----
-    let paGender = null; // 'male' | 'female' | null (not chosen yet)
-
-    function syncPaGender() {
-      document.querySelectorAll('.prof-gender-btn').forEach(function (btn) {
-        const on = btn.dataset.gender === paGender;
-        btn.classList.toggle('is-selected', on);
-        btn.setAttribute('aria-pressed', on ? 'true' : 'false');
-      });
-    }
-    document.querySelectorAll('.prof-gender-btn').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        paGender = btn.dataset.gender;
-        document.getElementById('pa-error').hidden = true;
-        syncPaGender();
-        updateAddPreview();
-      });
+    document.getElementById('community-login-btn').addEventListener('click', function () {
+      openAuthModal('signin');
     });
 
-    function openAddProfessor() {
-      if (!auth.currentUser) return openAuthModal('signin');
-      document.getElementById('pa-error').hidden = true;
-      document.getElementById('pa-name').value = profSearch.value.trim().slice(0, 60);
-      document.getElementById('pa-dept').value = '';
-      paGender = null;
-      syncPaGender();
-      updateAddPreview();
-      showProfView('add');
-      setTimeout(function () { document.getElementById('pa-name').focus(); }, 50);
-    }
-
-    function updateAddPreview() {
-      const box = document.getElementById('pa-avatar');
-      box.textContent = '';
-      box.appendChild(profAvatarEl(document.getElementById('pa-name').value, paGender));
-    }
-    document.getElementById('pa-name').addEventListener('input', updateAddPreview);
-
-    document.getElementById('prof-add-form').addEventListener('submit', function (e) {
-      e.preventDefault();
-      const errEl = document.getElementById('pa-error');
-      const btn = document.getElementById('pa-save-btn');
-      errEl.hidden = true;
-
-      const name = document.getElementById('pa-name').value.replace(/\s+/g, ' ').trim();
-      const dept = document.getElementById('pa-dept').value.replace(/\s+/g, ' ').trim();
-      const slug = profSlug(name);
-      if (name.length < 3 || !slug) {
-        errEl.textContent = 'Please enter the professor\'s full name.';
-        errEl.hidden = false;
-        return;
-      }
-
-      // Already exists? Just open it.
-      if (profState.professors.some(function (p) { return p.id === slug; })) {
-        openProfessor(slug);
-        return;
-      }
-
-      if (!paGender) {
-        errEl.textContent = 'Please choose Male or Female so the avatar fits the professor.';
-        errEl.hidden = false;
-        return;
-      }
-
-      btn.disabled = true;
-      db.collection('professors').doc(slug).set({
-        name: name,
-        nameLower: name.toLowerCase(),
-        department: dept,
-        gender: paGender,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-      }).then(function () {
-        return loadProfessors(true);
-      }).then(function () {
-        openProfessor(slug);
-      }).catch(function (err) {
-        console.error('Adding professor failed:', err);
-        errEl.textContent = err.code === 'permission-denied'
-          ? 'Could not add this professor. They may already exist: try searching for the name.'
-          : 'Could not add the professor. Please try again.';
-        errEl.hidden = false;
-      }).then(function () { btn.disabled = false; });
-    });
-
-    // ----- Professor details -----
-    function myReviewFor(profId) {
-      const o = profState.owners[profId];
-      if (!o) return null;
-      return profState.reviews.filter(function (r) { return r.id === o.reviewId; })[0] || null;
-    }
-
-    function openProfessor(profId) {
-      const prof = profState.professors.filter(function (p) { return p.id === profId; })[0];
-      if (!prof) return;
-      currentProfId = profId;
-      const mine = myReviewFor(profId);
-      setRating(mine ? mine.rating : 0);
-      rvComment.value = mine ? mine.comment : '';
-      document.getElementById('rv-anon').checked = mine ? !!mine.anonymous : true;
-      document.getElementById('rv-error').hidden = true;
-      document.getElementById('rv-success').hidden = true;
-      renderProfDetail();
-      showProfView('detail');
-      document.querySelector('#prof-modal .auth-modal-box').scrollTop = 0;
-    }
-
-    const REACTION_TYPES = [
-      { key: 'like', emoji: '👍' },
-      { key: 'laugh', emoji: '😂' },
-      { key: 'angry', emoji: '😠' }
+    // =====================================================
+    // ---- Course difficulty chart ----
+    // Illustrative scores (0-10) based on general student consensus.
+    // Update this list any time with real survey data from the community.
+    // =====================================================
+    const courseDifficultyData = [
+      { name: 'Quantum Mechanics',        difficulty: 9, necessity: 9, priority: 9 },
+      { name: 'Electromagnetism',         difficulty: 8, necessity: 9, priority: 9 },
+      { name: 'Analytical Mechanics',     difficulty: 8, necessity: 8, priority: 8 },
+      { name: 'Thermodynamics',           difficulty: 6, necessity: 7, priority: 6 },
+      { name: 'Mathematical Methods',     difficulty: 7, necessity: 9, priority: 8 },
+      { name: 'Optics',                   difficulty: 5, necessity: 6, priority: 5 },
+      { name: 'Electronics (TP)',         difficulty: 6, necessity: 6, priority: 5 },
+      { name: 'Numerical Methods',        difficulty: 6, necessity: 5, priority: 5 },
+      { name: 'English / Languages',      difficulty: 3, necessity: 5, priority: 3 }
     ];
 
-    function toggleReaction(review, reactionKey) {
-      const user = auth.currentUser;
-      if (!user) { openAuthModal('signin'); return; }
+    function renderCourseChart() {
+      const host = document.getElementById('course-chart');
+      if (!host) return;
+      host.innerHTML = '';
 
-      if (!review.reactions) review.reactions = {};
-      // Fold any legacy likedBy data in once, so old reviews behave consistently
-      (review.likedBy || []).forEach(function (uid) { if (!review.reactions[uid]) review.reactions[uid] = 'like'; });
+      courseDifficultyData.forEach(function (c) {
+        const row = document.createElement('div');
+        row.className = 'course-row';
 
-      const previous = review.reactions[user.uid] || null;
-      const turningOff = previous === reactionKey;
+        const label = document.createElement('div');
+        label.className = 'course-row-label';
+        label.textContent = c.name;
+        row.appendChild(label);
 
-      // Optimistic local update so the UI feels instant
-      if (turningOff) {
-        delete review.reactions[user.uid];
-      } else {
-        review.reactions[user.uid] = reactionKey;
-      }
-      renderProfDetail();
+        const bars = document.createElement('div');
+        bars.className = 'course-row-bars';
 
-      const update = {};
-      update['reactions.' + user.uid] = turningOff ? firebase.firestore.FieldValue.delete() : reactionKey;
-
-      db.collection('professorReviews').doc(review.id).update(update).catch(function (err) {
-        console.error('Reaction failed:', err.code, err.message);
-        // Revert on failure
-        if (turningOff) {
-          review.reactions[user.uid] = previous;
-        } else if (previous) {
-          review.reactions[user.uid] = previous;
-        } else {
-          delete review.reactions[user.uid];
-        }
-        renderProfDetail();
-      });
-    }
-
-    function renderProfDetail() {
-      const prof = profState.professors.filter(function (p) { return p.id === currentProfId; })[0];
-      if (!prof) return;
-      const stats = computeStats()[prof.id] || { n: 0, avg: 0 };
-
-      document.getElementById('pd-name').textContent = prof.name;
-      const portrait = document.getElementById('pd-portrait');
-      portrait.textContent = '';
-      portrait.appendChild(profAvatarEl(prof.name, prof.gender));
-      const deptEl = document.getElementById('pd-dept');
-      deptEl.textContent = prof.department || '';
-      deptEl.hidden = !prof.department;
-      document.getElementById('pd-avg').textContent = stats.n ? stats.avg.toFixed(1) : '–';
-      const starsBox = document.getElementById('pd-stars');
-      starsBox.textContent = '';
-      starsBox.appendChild(starsEl(stats.avg));
-      document.getElementById('pd-count').textContent = stats.n
-        ? stats.n + (stats.n === 1 ? ' review' : ' reviews')
-        : 'No reviews yet';
-
-      const mine = myReviewFor(prof.id);
-      document.getElementById('rv-form-title').textContent = mine ? 'Your review' : 'Write a review';
-      document.getElementById('rv-submit-btn').textContent = mine ? 'Update review' : 'Post review';
-      document.getElementById('rv-delete-btn').hidden = !mine;
-      document.getElementById('rv-count').textContent = rvComment.value.length;
-
-      // Reviews list (newest first)
-      const list = document.getElementById('pd-reviews');
-      list.textContent = '';
-      const reviews = profState.reviews.filter(function (r) { return r.professorId === prof.id; })
-        .sort(function (a, b) { return tsMs(b.createdAt) - tsMs(a.createdAt); });
-
-      if (!reviews.length) {
-        const empty = document.createElement('p');
-        empty.className = 'people-empty';
-        empty.textContent = 'No reviews yet. Be the first to write one!';
-        list.appendChild(empty);
-        return;
-      }
-
-      reviews.forEach(function (r) {
-        const isMine = mine && mine.id === r.id;
-        const isAnon = r.anonymous || !r.authorId;
-        const ap = !isAnon ? profState.profiles[r.authorId] : null;
-
-        const card = document.createElement('article');
-        card.className = 'review-card' + (isMine ? ' is-mine' : '');
-
-        const top = document.createElement('div');
-        top.className = 'review-top';
-
-        const av = document.createElement('div');
-        av.className = 'profile-avatar review-avatar';
-        if (isAnon) {
-          av.appendChild(anonAvatarEl());
-        } else {
-          setAvatar(av, ap || {});
-        }
-
-        const info = document.createElement('div');
-        info.className = 'review-top-info';
-        const author = document.createElement('strong');
-        author.className = 'review-author';
-        author.textContent = isAnon ? 'Anonymous student' : (ap ? fullName(ap) : 'Student');
-        info.appendChild(author);
-
-        const head = document.createElement('div');
-        head.className = 'review-head';
-        head.appendChild(starsEl(r.rating));
-        if (isMine) {
-          const badge = document.createElement('span');
-          badge.className = 'review-mine-badge';
-          badge.textContent = 'Your review';
-          head.appendChild(badge);
-        }
-        info.appendChild(head);
-
-        top.appendChild(av);
-        top.appendChild(info);
-
-        const text = document.createElement('p');
-        text.className = 'review-text';
-        text.textContent = r.comment;
-
-        const meta = document.createElement('div');
-        meta.className = 'review-meta';
-        const when = document.createElement('span');
-        when.textContent = new Date(tsMs(r.createdAt)).toLocaleDateString([], { day: 'numeric', month: 'short', year: 'numeric' });
-        meta.appendChild(when);
-
-        const reactionBar = document.createElement('div');
-        reactionBar.className = 'reaction-bar';
-        const reactions = r.reactions || {};
-        // Backward-compat: fold in any legacy likedBy array as implicit 'like' reactions
-        (r.likedBy || []).forEach(function (uid) { if (!reactions[uid]) reactions[uid] = 'like'; });
-        const myUid = auth.currentUser ? auth.currentUser.uid : null;
-        const myReaction = myUid ? reactions[myUid] : null;
-
-        REACTION_TYPES.forEach(function (rt) {
-          const count = Object.values(reactions).filter(function (v) { return v === rt.key; }).length;
-          const btn = document.createElement('button');
-          btn.type = 'button';
-          btn.className = 'review-reaction-btn' + (myReaction === rt.key ? ' is-selected reaction-' + rt.key : '');
-          btn.innerHTML = rt.emoji + ' <span>' + count + '</span>';
-          btn.addEventListener('click', function () { toggleReaction(r, rt.key); });
-          reactionBar.appendChild(btn);
+        [
+          { key: 'difficulty', cls: 'bar-difficulty' },
+          { key: 'necessity',  cls: 'bar-necessity' },
+          { key: 'priority',   cls: 'bar-priority' }
+        ].forEach(function (m) {
+          const track = document.createElement('div');
+          track.className = 'course-bar-track';
+          const fill = document.createElement('div');
+          fill.className = 'course-bar-fill ' + m.cls;
+          fill.style.width = (c[m.key] * 10) + '%';
+          const val = document.createElement('span');
+          val.className = 'course-bar-value';
+          val.textContent = c[m.key];
+          track.appendChild(fill);
+          track.appendChild(val);
+          bars.appendChild(track);
         });
-        meta.appendChild(reactionBar);
 
-        if (!isMine) {
-          const rep = document.createElement('button');
-          rep.type = 'button';
-          rep.className = 'review-report-btn';
-          rep.textContent = 'Report';
-          rep.addEventListener('click', function () { reportReview(r, rep); });
-          meta.appendChild(rep);
-        }
-
-        card.appendChild(top);
-        card.appendChild(text);
-        card.appendChild(meta);
-        list.appendChild(card);
+        row.appendChild(bars);
+        host.appendChild(row);
       });
     }
+    renderCourseChart();
 
-    // ----- Star input -----
-    function setRating(n) {
-      rvRating = n;
-      paintStars(n);
-    }
-    function paintStars(n) {
-      document.querySelectorAll('#rv-stars .star-btn').forEach(function (b, i) {
-        b.classList.toggle('is-on', i < n);
-      });
-      document.getElementById('rv-rating-label').textContent = RATING_WORDS[n] || RATING_WORDS[0];
-    }
-    (function buildStarInput() {
-      const box = document.getElementById('rv-stars');
-      for (let v = 1; v <= 5; v++) {
-        const b = document.createElement('button');
-        b.type = 'button';
-        b.className = 'star-btn';
-        b.textContent = '★';
-        b.setAttribute('aria-label', v + (v === 1 ? ' star' : ' stars'));
-        b.addEventListener('mouseenter', function () { paintStars(v); });
-        b.addEventListener('focus', function () { paintStars(v); });
-        b.addEventListener('click', function () { setRating(v); });
-        box.appendChild(b);
-      }
-      box.addEventListener('mouseleave', function () { paintStars(rvRating); });
-      box.addEventListener('focusout', function () { paintStars(rvRating); });
-    })();
-
-    rvComment.addEventListener('input', function () {
-      document.getElementById('rv-count').textContent = rvComment.value.length;
-    });
-
-    // ----- Post / update review -----
-    document.getElementById('review-form').addEventListener('submit', function (e) {
-      e.preventDefault();
-      const user = auth.currentUser;
-      if (!user || !currentProfId) return;
-      const errEl = document.getElementById('rv-error');
-      const okEl = document.getElementById('rv-success');
-      const btn = document.getElementById('rv-submit-btn');
-      errEl.hidden = true; okEl.hidden = true;
-
-      const comment = rvComment.value.trim();
-      if (!rvRating) {
-        errEl.textContent = 'Please choose a star rating.';
-        errEl.hidden = false;
-        return;
-      }
-      if (comment.length < 10) {
-        errEl.textContent = 'Please write at least 10 characters.';
-        errEl.hidden = false;
-        return;
-      }
-
-      const anon = document.getElementById('rv-anon').checked;
-      const profId = currentProfId;
-      const existing = myReviewFor(profId);
-
-      const data = {
-        professorId: profId,
-        rating: rvRating,
-        comment: comment.slice(0, 500),
-        anonymous: anon,
-        createdAt: existing ? existing.createdAt : firebase.firestore.FieldValue.serverTimestamp()
-      };
-      if (!anon) data.authorId = user.uid; // named reviews carry a verified author id; anonymous ones carry none
-
-      let op;
-      if (existing) {
-        op = db.collection('professorReviews').doc(existing.id).set(data);
-      } else {
-        const reviewRef = db.collection('professorReviews').doc();
-        const ownerRef = db.collection('reviewOwners').doc(profId + '_' + user.uid);
-        const batch = db.batch();
-        batch.set(ownerRef, { ownerUid: user.uid, professorId: profId, reviewId: reviewRef.id });
-        batch.set(reviewRef, data);
-        op = batch.commit();
-      }
-
-      btn.disabled = true;
-      op.then(function () {
-        return loadProfessors(true);
-      }).then(function () {
-        if (currentProfId === profId) {
-          renderProfDetail();
-          okEl.hidden = false;
-        }
-        awardBadge('reviewer');
-      }).catch(function (err) {
-        console.error('Saving review failed:', err);
-        errEl.textContent = err.code === 'permission-denied'
-          ? 'Could not save your review: permission denied (check your Firestore rules).'
-          : 'Could not save your review. Please try again.';
-        errEl.hidden = false;
-      }).then(function () { btn.disabled = false; });
-    });
-
-    document.getElementById('rv-delete-btn').addEventListener('click', function () {
-      const user = auth.currentUser;
-      const profId = currentProfId;
-      const mine = myReviewFor(profId);
-      if (!user || !mine) return;
-      if (!window.confirm('Delete your review? This cannot be undone.')) return;
-
-      const batch = db.batch();
-      batch.delete(db.collection('professorReviews').doc(mine.id));
-      batch.delete(db.collection('reviewOwners').doc(profState.owners[profId].docId));
-      batch.commit().then(function () {
-        setRating(0);
-        rvComment.value = '';
-        document.getElementById('rv-anon').checked = true;
-        document.getElementById('rv-success').hidden = true;
-        return loadProfessors(true);
-      }).catch(function (err) {
-        console.error('Deleting review failed:', err);
-        const errEl = document.getElementById('rv-error');
-        errEl.textContent = 'Could not delete your review. Please try again.';
-        errEl.hidden = false;
-      });
-    });
-
-    // ----- Report a review -----
-    function reportReview(r, btn) {
-      const user = auth.currentUser;
-      if (!user) return;
-      if (!window.confirm('Report this review as inappropriate?')) return;
-      btn.disabled = true;
-      db.collection('reviewReports').doc(r.id + '_' + user.uid).set({
-        reviewId: r.id,
-        professorId: r.professorId,
-        reporterUid: user.uid,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-      }).then(function () {
-        btn.textContent = 'Reported ✓';
-      }).catch(function (err) {
-        console.error('Report failed:', err);
-        btn.textContent = err.code === 'permission-denied' ? 'Already reported' : 'Failed';
-      });
-    }
-
-    // ----- Wiring -----
-    profSearch.addEventListener('input', renderProfessors);
-    profSort.addEventListener('change', renderProfessors);
-    document.getElementById('prof-add-btn').addEventListener('click', openAddProfessor);
-    document.getElementById('prof-login-btn').addEventListener('click', function () { openAuthModal('signin'); });
-    document.querySelectorAll('[data-close-prof]').forEach(function (el) {
-      el.addEventListener('click', function (e) { e.preventDefault(); closeProfModal(); });
-    });
-    profModal.addEventListener('click', function (e) {
-      if (e.target === profModal) closeProfModal();
-    });
-    document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape' && profModal.classList.contains('is-open')) closeProfModal();
-    });
   </script>
 
   <div id="badge-toast" class="badge-toast" role="status" aria-live="polite">
