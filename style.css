@@ -3257,3 +3257,158 @@ h4 {
     max-width: none;
   }
 }
+
+/* =========================================
+   Hero photo (students on campus)
+   ========================================= */
+.hero-photo-wrap {
+  width: 100%;
+  max-width: 640px;
+  margin: 28px auto 0;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--card);
+}
+
+.hero-photo {
+  display: block;
+  width: 100%;
+  height: 320px;
+  object-fit: cover;
+}
+
+@media (max-width: 720px) {
+  .hero-photo {
+    height: 200px;
+  }
+}
+
+/* =========================================
+   Generic sign-in gate (Community Documents)
+   ========================================= */
+.auth-gate {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 22px 26px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--card);
+  margin-bottom: 22px;
+}
+
+.auth-gate p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.auth-gate[hidden],
+#community-content[hidden] {
+  display: none !important;
+}
+
+/* =========================================
+   Course difficulty chart
+   ========================================= */
+.course-chart-card {
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--card);
+  padding: 24px 26px 20px;
+}
+
+.course-chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin-bottom: 18px;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.legend-dot-difficulty { background: #ff6b81; }
+.legend-dot-necessity  { background: var(--accent); }
+.legend-dot-priority   { background: var(--accent-three); }
+
+.course-row {
+  display: grid;
+  grid-template-columns: 170px 1fr;
+  gap: 14px;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.course-row:last-child {
+  border-bottom: none;
+}
+
+.course-row-label {
+  font-size: 0.92rem;
+  color: var(--text);
+  font-weight: 600;
+}
+
+.course-row-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.course-bar-track {
+  position: relative;
+  height: 9px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  width: 100%;
+}
+
+.course-bar-fill {
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.4s ease;
+}
+
+.bar-difficulty { background: #ff6b81; }
+.bar-necessity  { background: var(--accent); }
+.bar-priority   { background: var(--accent-three); }
+
+.course-bar-value {
+  position: absolute;
+  right: -22px;
+  top: -5px;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.course-chart-note {
+  margin-top: 16px;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+@media (max-width: 640px) {
+  .course-row {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+  .course-bar-value {
+    right: 0;
+  }
+}
